@@ -1,0 +1,211 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "hyperdirector/brand-kit.schema.json",
+  "title": "HyperDirector Brand Kit",
+  "description": "Persistent brand configuration applied to all generated videos. Place brand-kit.json in your project root.",
+  "type": "object",
+  "required": ["brand_name", "colors", "fonts", "cta"],
+  "additionalProperties": false,
+  "properties": {
+    "brand_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "description": "Brand or creator name. Used in CTA and attribution text."
+    },
+    "locale": {
+      "type": "string",
+      "default": "zh-CN",
+      "examples": ["zh-CN", "en-US", "ja-JP"],
+      "description": "Brand locale. Sets default language behavior for generated content."
+    },
+    "default_output_language": {
+      "type": "string",
+      "default": "zh-CN",
+      "examples": ["zh-CN", "en-US"],
+      "description": "Default language for generated video scripts, captions, and on-screen copy. Can be overridden per brief."
+    },
+    "language_policy": {
+      "type": "object",
+      "description": "Fine-grained language control for each content layer.",
+      "additionalProperties": false,
+      "properties": {
+        "script_language": {
+          "type": "string",
+          "examples": ["zh-CN", "en-US"],
+          "description": "Language for narration scripts."
+        },
+        "subtitle_language": {
+          "type": "string",
+          "examples": ["zh-CN", "en-US"],
+          "description": "Language for on-screen subtitles and captions."
+        },
+        "ui_copy_language": {
+          "type": "string",
+          "examples": ["zh-CN", "en-US"],
+          "description": "Language for CTA buttons and UI overlay text."
+        },
+        "technical_terms": {
+          "type": "string",
+          "enum": ["keep_english", "keep_english_with_chinese_explanation", "translate_all"],
+          "default": "keep_english_with_chinese_explanation",
+          "description": "How to handle technical terms (API, GSAP, HTML, etc.) in Chinese-language videos."
+        }
+      }
+    },
+    "colors": {
+      "type": "object",
+      "required": ["primary", "accent"],
+      "description": "Brand color palette. Values are applied as CSS variables in generated compositions.",
+      "additionalProperties": false,
+      "properties": {
+        "primary": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Primary brand color. Used for headlines and key text."
+        },
+        "accent": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Accent color. Used for highlights, buttons, and emphasis."
+        },
+        "background": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "default": "#FFFFFF",
+          "description": "Default background color."
+        },
+        "text_primary": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Primary text color."
+        },
+        "text_secondary": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Secondary/muted text color."
+        }
+      }
+    },
+    "fonts": {
+      "type": "object",
+      "required": ["headline", "body"],
+      "description": "Brand font stack. Font names must be available in the render environment.",
+      "additionalProperties": false,
+      "properties": {
+        "headline": {
+          "type": "string",
+          "description": "Font for large display text and scene titles. Example: Inter, Space Grotesk."
+        },
+        "body": {
+          "type": "string",
+          "description": "Font for captions and body copy. Use CJK-compatible font for Chinese: Noto Sans SC, PingFang SC."
+        },
+        "code": {
+          "type": "string",
+          "description": "Monospace font for code snippets in technical videos. Example: JetBrains Mono."
+        }
+      }
+    },
+    "motion_language": {
+      "type": "object",
+      "description": "Animation style preferences. Maps to GSAP ease and timing choices in the composer.",
+      "additionalProperties": false,
+      "properties": {
+        "pace": {
+          "type": "string",
+          "enum": ["fast", "medium", "slow"],
+          "default": "medium",
+          "description": "Overall animation pace. fast=0.2s, medium=0.4s, slow=0.6s per element entrance."
+        },
+        "style": {
+          "type": "string",
+          "enum": ["clean_tech", "warm_social", "corporate", "editorial", "playful"],
+          "default": "clean_tech",
+          "description": "Visual character. Influences easing choices, transition types, and typographic weight."
+        },
+        "transitions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["slide_up", "slide_down", "scale_in", "scale_out", "wipe", "fade", "push", "blur_crossfade", "zoom_through"]
+          },
+          "description": "Preferred transition types. Composer selects from this list."
+        },
+        "entrance_default": {
+          "type": "string",
+          "description": "Default entrance animation for text elements. Example: fade_slide_up."
+        },
+        "exit_default": {
+          "type": "string",
+          "description": "Default exit animation for scene endings. Example: fade_out."
+        }
+      }
+    },
+    "voice": {
+      "type": "object",
+      "description": "Copy tone and TTS preferences.",
+      "additionalProperties": false,
+      "properties": {
+        "tone": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Positive description of desired copy voice. Example: professional, direct, high information density."
+        },
+        "avoid": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Copy patterns to avoid. Example: excessive hype, vague slogans, cheap icons."
+        },
+        "tts_voice": {
+          "type": "string",
+          "default": "af_heart",
+          "description": "Kokoro TTS voice identifier. See HyperFrames prompting guide for available voices."
+        },
+        "tts_speed": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2.0,
+          "default": 1.0,
+          "description": "TTS playback speed multiplier."
+        }
+      }
+    },
+    "cta": {
+      "type": "object",
+      "required": ["default"],
+      "description": "Call-to-action copy variants. Composer selects based on brief.cta_override or defaults to cta.default.",
+      "additionalProperties": true,
+      "properties": {
+        "default": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Default CTA text used when no override is specified."
+        }
+      }
+    },
+    "assets": {
+      "type": "object",
+      "description": "Default asset paths relative to project root.",
+      "additionalProperties": false,
+      "properties": {
+        "logo": { "type": "string", "description": "Logo image path." },
+        "watermark": { "type": "string", "description": "Watermark image path." },
+        "background_default": { "type": "string", "description": "Default background image." },
+        "music_default": { "type": "string", "description": "Default background music file." }
+      }
+    },
+    "safe_zone": {
+      "type": "object",
+      "description": "Subtitle and content safe zone as percentage of canvas dimensions.",
+      "additionalProperties": false,
+      "properties": {
+        "top_percent": { "type": "number", "minimum": 0, "maximum": 30, "default": 10 },
+        "bottom_percent": { "type": "number", "minimum": 0, "maximum": 30, "default": 15 },
+        "left_percent": { "type": "number", "minimum": 0, "maximum": 20, "default": 5 },
+        "right_percent": { "type": "number", "minimum": 0, "maximum": 20, "default": 5 }
+      }
+    }
+  }
+}

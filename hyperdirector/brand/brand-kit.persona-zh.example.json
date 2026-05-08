@@ -1,0 +1,65 @@
+{
+  "brand_name": "示例创作者",
+  "locale": "zh-CN",
+  "default_output_language": "zh-CN",
+  "language_policy": {
+    "script_language": "zh-CN",
+    "subtitle_language": "zh-CN",
+    "ui_copy_language": "zh-CN",
+    "technical_terms": "keep_english_with_chinese_explanation"
+  },
+  "colors": {
+    "primary": "#0F172A",
+    "accent": "#38BDF8",
+    "background": "#F8FAFC",
+    "text_primary": "#1E293B",
+    "text_secondary": "#64748B"
+  },
+  "fonts": {
+    "headline": "Inter",
+    "body": "Noto Sans SC",
+    "code": "JetBrains Mono"
+  },
+  "motion_language": {
+    "pace": "fast",
+    "style": "clean_tech",
+    "transitions": ["slide_up", "scale_in", "wipe"],
+    "entrance_default": "fade_slide_up",
+    "exit_default": "fade_out"
+  },
+  "voice": {
+    "tone": "专业、直给、有工程感、有代入感。面向实践型学习者。信息密度高，句子短，结论先行。避免卖课口吻与空洞口号。",
+    "avoid": [
+      "廉价图标（emoji 当主视觉、剪贴画风格图标）",
+      "过度鸡血（你也可以成功、逆袭、月入百万）",
+      "空泛口号（引领未来、赋能生态、重塑行业）",
+      "短字成行（每行只有 2-3 个字的排版）",
+      "过度使用强调引号（「这」「个」「词」每词都加引号）",
+      "空洞的强调词（超级、非常、极其、绝对、完全）",
+      "被动式推测（也许可能、或许有机会、感觉应该）",
+      "假问句煎情（你是否曾经感到迷茫？你有没有想过）",
+      "虚假紧迫感（限时特惠、仅剩最后 3 名）"
+    ],
+    "tts_voice": "af_heart",
+    "tts_speed": 1.05
+  },
+  "cta": {
+    "default": "关注示例创作者，获取更多结构化内容",
+    "subscription": "前往你的课程或会员落地页（示例：https://example.com/join）",
+    "follow_wechat": "关注公众号「示例创作者」，回复「视频」获取素材说明",
+    "share": "转发给需要同类工作流的同事或朋友",
+    "trial": "用 HyperDirector 生成你自己的第一个 AI 视频"
+  },
+  "assets": {
+    "logo": "brand/assets/logo.png",
+    "watermark": "brand/assets/watermark.png",
+    "background_default": "brand/assets/bg-default.jpg",
+    "music_default": "brand/assets/music-default.mp3"
+  },
+  "safe_zone": {
+    "top_percent": 10,
+    "bottom_percent": 22,
+    "left_percent": 5,
+    "right_percent": 5
+  }
+}

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}} — saas-demo-kit</title>
+  <!-- GSAP 3.12.5 — required, do not change version -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <style>
+    /* ── Brand Kit CSS Variables ──────────────────────────────────────── */
+    :root {
+      --color-primary:  #0F172A;
+      --color-accent:   #6366F1;
+      --color-bg:       #FFFFFF;
+      --color-text:     #1F2937;
+      --color-muted:    #6B7280;
+      --font-headline:  'Inter', 'Noto Sans SC', sans-serif;
+      --font-body:      'Noto Sans SC', 'PingFang SC', sans-serif;
+
+      /* Derived */
+      --canvas-w: 1920px;
+      --canvas-h: 1080px;
+      --safe-bottom: 10%;
+      --safe-side: 6%;
+      --pace: 0.35s;
+
+      /* Feature badge colors */
+      --feature-bg: rgba(99, 102, 241, 0.08);
+      --card-border: rgba(99, 102, 241, 0.2);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0A0A0A; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+
+    /* ── Canvas ───────────────────────────────────────────────────────── */
+    #composition {
+      width: var(--canvas-w);
+      height: var(--canvas-h);
+      position: relative;
+      overflow: hidden;
+      background: var(--color-bg);
+      font-family: var(--font-body);
+    }
+
+    /* ── Scene base ───────────────────────────────────────────────────── */
+    .scene {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      padding: 0 var(--safe-side);
+      opacity: 0;
+    }
+
+    /* ── Typography ───────────────────────────────────────────────────── */
+    .headline {
+      font-family: var(--font-headline);
+      font-size: 80px;
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--color-primary);
+      letter-spacing: -2px;
+    }
+    .headline .accent { color: var(--color-accent); }
+
+    .subhead {
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--color-text);
+      margin-top: 20px;
+      max-width: 700px;
+    }
+
+    .label-tag {
+      display: inline-block;
+      background: var(--feature-bg);
+      border: 1px solid var(--card-border);
+      color: var(--color-accent);
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 8px 20px;
+      border-radius: 6px;
+      margin-bottom: 24px;
+    }
+
+    /* ── Two-column layout ────────────────────────────────────────────── */
+    .col-layout {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      gap: 80px;
+    }
+    .col-text { flex: 0 0 48%; }
+    .col-visual { flex: 1; display: flex; align-items: center; justify-content: center; }
+
+    /* ── Product Screenshot Area ──────────────────────────────────────── */
+    .screenshot-frame {
+      width: 100%;
+      max-width: 780px;
+      background: var(--color-primary);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .screenshot-titlebar {
+      background: rgba(255,255,255,0.06);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-r { background: #FF5F56; }
+    .dot-y { background: #FEBC2E; }
+    .dot-g { background: #28C840; }
+    .screenshot-body {
+      padding: 32px;
+      min-height: 380px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 16px;
+    }
+    /* Placeholder UI lines */
+    .ui-line {
+      height: 20px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 4px;
+    }
+    .ui-line.short { width: 60%; }
+    .ui-line.medium { width: 80%; }
+    .ui-line.full { width: 100%; }
+    .ui-line.accent-line-ui { background: var(--color-accent); opacity: 0.6; width: 40%; }
+
+    /* ── Feature Card ─────────────────────────────────────────────────── */
+    .feature-card {
+      background: var(--color-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 32px;
+      position: relative;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--color-accent);
+      border-radius: 16px 16px 0 0;
+    }
+    .feature-number {
+      font-size: 52px;
+      font-weight: 800;
+      color: var(--color-accent);
+      font-family: var(--font-headline);
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+    .feature-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 12px;
+    }
+    .feature-desc { font-size: 22px; color: var(--color-muted); line-height: 1.6; }
+
+    /* ── Metric Block ─────────────────────────────────────────────────── */
+    .metric-row {
+      display: flex;
+      gap: 40px;
+      margin-top: 32px;
+    }
+    .metric {
+      flex: 1;
+      background: var(--feature-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 28px 24px;
+      text-align: center;
+    }
+    .metric-value {
+      font-family: var(--font-headline);
+      font-size: 56px;
+      font-weight: 800;
+      color: var(--color-accent);
+      line-height: 1;
+    }
+    .metric-label { font-size: 20px; color: var(--color-muted); margin-top: 8px; }
+
+    /* ── Problem scene ────────────────────────────────────────────────── */
+    #scene_01 { background: var(--color-primary); }
+    #scene_01 .headline { color: #FFFFFF; font-size: 88px; }
+    #scene_01 .subhead { color: rgba(255,255,255,0.7); }
+
+    /* ── Product reveal scene ─────────────────────────────────────────── */
+    #scene_02 { background: var(--color-bg); }
+
+    /* ── Feature scenes ───────────────────────────────────────────────── */
+    #scene_03, #scene_04, #scene_05 { background: var(--color-bg); }
+
+    /* ── CTA scene ────────────────────────────────────────────────────── */
+    #scene_06 { background: var(--color-primary); justify-content: center; flex-direction: column; text-align: center; }
+    #scene_06 .headline { color: #FFFFFF; text-align: center; }
+    #scene_06 .subhead { color: rgba(255,255,255,0.7); text-align: center; max-width: 900px; margin: 20px auto 0; }
+
+    /* ── CTA Button ───────────────────────────────────────────────────── */
+    .cta-btn {
+      background: var(--color-accent);
+      color: #FFFFFF;
+      font-family: var(--font-headline);
+      font-size: 28px;
+      font-weight: 700;
+      padding: 24px 64px;
+      border-radius: 12px;
+      margin-top: 40px;
+      border: none;
+      cursor: default;
+    }
+
+    /* ── Subtitle ─────────────────────────────────────────────────────── */
+    .subtitle {
+      position: absolute;
+      bottom: var(--safe-bottom);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      background: rgba(0, 0, 0, 0.70);
+      color: #FFFFFF;
+      font-size: 26px;
+      font-weight: 400;
+      line-height: 1.5;
+      padding: 12px 24px;
+      border-radius: 6px;
+      text-align: center;
+      z-index: 100;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+
+<div id="composition" data-aspect-ratio="16:9">
+
+  <!-- ── scene_01: problem ───────────────────────────────────────────── -->
+  <section id="scene_01" class="scene" data-duration="6" data-transition="fast_scale_in">
+    <div>
+      <div class="label-tag" style="color:var(--color-accent); background:rgba(99,102,241,0.15); border-color:rgba(99,102,241,0.3);">The Problem</div>
+      <h1 class="headline">{{problem_headline}}</h1>
+      <p class="subhead">{{problem_subhead}}</p>
+    </div>
+    <div class="subtitle">{{caption_01}}</div>
+  </section>
+
+  <!-- ── scene_02: product_reveal ────────────────────────────────────── -->
+  <section id="scene_02" class="scene" data-duration="8" data-transition="scale_in">
+    <div class="col-layout">
+      <div class="col-text">
+        <div class="label-tag">Product</div>
+        <h2 class="headline">{{product_headline}}</h2>
+        <p class="subhead">{{product_subhead}}</p>
+      </div>
+      <div class="col-visual">
+        <div class="screenshot-frame">
+          <div class="screenshot-titlebar">
+            <div class="dot dot-r"></div>
+            <div class="dot dot-y"></div>
+            <div class="dot dot-g"></div>
+          </div>
+          <div class="screenshot-body">
+            <!-- Replace with actual product screenshot via background-image -->
+            <div class="ui-line accent-line-ui"></div>
+            <div class="ui-line medium"></div>
+            <div class="ui-line full"></div>
+            <div class="ui-line short"></div>
+            <div class="ui-line medium"></div>
+            <div class="ui-line full"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="subtitle">{{caption_02}}</div>
+  </section>
+
+  <!-- ── scene_03: feature_1 ─────────────────────────────────────────── -->
+  <section id="scene_03" class="scene" data-duration="8" data-transition="slide_up">
+    <div class="col-layout">
+      <div class="col-text">
+        <div class="label-tag">Feature 01</div>
+        <h2 class="headline" style="font-size:64px;">{{feature1_headline}}</h2>
+        <p class="subhead">{{feature1_desc}}</p>
+        <div class="metric-row">
+          <div class="metric">
+            <div class="metric-value">{{metric1_value}}</div>
+            <div class="metric-label">{{metric1_label}}</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">{{metric2_value}}</div>
+            <div class="metric-label">{{metric2_label}}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-visual">
+        <div class="feature-card" style="width:100%; max-width:600px;">
+          <div class="feature-number">01</div>
+          <div class="feature-title">{{feature1_card_title}}</div>
+          <div class="feature-desc">{{feature1_card_desc}}</div>
+        </div>
+      </div>
+    </div>
+    <div class="subtitle">{{caption_03}}</div>
+  </section>
+
+  <!-- ── scene_04: feature_2 ─────────────────────────────────────────── -->
+  <section id="scene_04" class="scene" data-duration="8" data-transition="slide_up">
+    <div class="col-layout">
+      <div class="col-visual">
+        <div class="feature-card" style="width:100%; max-width:600px;">
+          <div class="feature-number">02</div>
+          <div class="feature-title">{{feature2_card_title}}</div>
+          <div class="feature-desc">{{feature2_card_desc}}</div>
+        </div>
+      </div>
+      <div class="col-text">
+        <div class="label-tag">Feature 02</div>
+        <h2 class="headline" style="font-size:64px;">{{feature2_headline}}</h2>
+        <p class="subhead">{{feature2_desc}}</p>
+      </div>
+    </div>
+    <div class="subtitle">{{caption_04}}</div>
+  </section>
+
+  <!-- ── scene_05: feature_3 ─────────────────────────────────────────── -->
+  <section id="scene_05" class="scene" data-duration="8" data-transition="slide_up">
+    <div class="col-layout">
+      <div class="col-text">
+        <div class="label-tag">Feature 03</div>
+        <h2 class="headline" style="font-size:64px;">{{feature3_headline}}</h2>
+        <p class="subhead">{{feature3_desc}}</p>
+      </div>
+      <div class="col-visual">
+        <div class="feature-card" style="width:100%; max-width:600px;">
+          <div class="feature-number">03</div>
+          <div class="feature-title">{{feature3_card_title}}</div>
+          <div class="feature-desc">{{feature3_card_desc}}</div>
+        </div>
+      </div>
+    </div>
+    <div class="subtitle">{{caption_05}}</div>
+  </section>
+
+  <!-- ── scene_06: cta ───────────────────────────────────────────────── -->
+  <section id="scene_06" class="scene" data-duration="6" data-transition="slide_up">
+    <h2 class="headline">{{cta_headline}}</h2>
+    <p class="subhead">{{cta_subhead}}</p>
+    <button class="cta-btn">{{cta_button}}</button>
+    <div class="subtitle">{{caption_06}}</div>
+  </section>
+
+</div><!-- /#composition -->
+
+<script>
+  // ── HyperFrames GSAP Timeline ──────────────────────────────────────────
+  window.__timelines = window.__timelines || [];
+
+  const tl = gsap.timeline({ paused: true });
+
+  // ── Scene offsets ──────────────────────────────────────────────────
+  // scene_01: 0s  (6s)   scene_02: 6s  (8s)   scene_03: 14s (8s)
+  // scene_04: 22s (8s)   scene_05: 30s (8s)   scene_06: 38s (6s)
+  // total: 44s
+  const S = { s1: 0, s2: 6, s3: 14, s4: 22, s5: 30, s6: 38 };
+
+  // ── scene_01: problem ───────────────────────────────────────────────
+  tl.set('#scene_01', { opacity: 1 }, S.s1)
+    .from('#scene_01 .label-tag', { opacity: 0, x: -30, duration: 0.3, ease: 'power2.out' }, S.s1)
+    .from('#scene_01 .headline', { opacity: 0, y: 40, duration: 0.35, ease: 'power3.out' }, S.s1 + 0.2)
+    .from('#scene_01 .subhead', { opacity: 0, y: 20, duration: 0.3, ease: 'power2.out' }, S.s1 + 0.45)
+    .from('#scene_01 .subtitle', { opacity: 0, duration: 0.2, ease: 'none' }, S.s1 + 0.1)
+    .to('#scene_01 .subtitle', { opacity: 0, duration: 0.2 }, S.s2 - 0.3)
+    .to('#scene_01', { opacity: 0, duration: 0.3 }, S.s2 - 0.3);
+
+  // ── scene_02: product_reveal ────────────────────────────────────────
+  tl.set('#scene_02', { opacity: 1 }, S.s2)
+    .from('#scene_02 .col-text', { opacity: 0, x: -50, duration: 0.4, ease: 'power3.out' }, S.s2)
+    .from('#scene_02 .screenshot-frame', { opacity: 0, scale: 0.9, x: 60, duration: 0.5, ease: 'power2.out' }, S.s2 + 0.15)
+    .from('#scene_02 .subtitle', { opacity: 0, duration: 0.2 }, S.s2 + 0.1)
+    .to('#scene_02 .subtitle', { opacity: 0, duration: 0.2 }, S.s3 - 0.3)
+    .to('#scene_02', { opacity: 0, duration: 0.3 }, S.s3 - 0.3);
+
+  // ── scene_03: feature_1 ─────────────────────────────────────────────
+  tl.set('#scene_03', { opacity: 1 }, S.s3)
+    .from('#scene_03 .label-tag', { opacity: 0, x: -20, duration: 0.25, ease: 'power2.out' }, S.s3)
+    .from('#scene_03 .headline', { opacity: 0, y: 30, duration: 0.3, ease: 'power3.out' }, S.s3 + 0.15)
+    .from('#scene_03 .subhead', { opacity: 0, y: 20, duration: 0.3, ease: 'power2.out' }, S.s3 + 0.35)
+    .from('#scene_03 .metric', { opacity: 0, y: 20, duration: 0.3, ease: 'power2.out', stagger: 0.1 }, S.s3 + 0.5)
+    .from('#scene_03 .feature-card', { opacity: 0, x: 50, duration: 0.4, ease: 'power2.out' }, S.s3 + 0.2)
+    .from('#scene_03 .subtitle', { opacity: 0, duration: 0.2 }, S.s3 + 0.1)
+    .to('#scene_03 .subtitle', { opacity: 0, duration: 0.2 }, S.s4 - 0.3)
+    .to('#scene_03', { opacity: 0, duration: 0.3 }, S.s4 - 0.3);
+
+  // ── scene_04: feature_2 ─────────────────────────────────────────────
+  tl.set('#scene_04', { opacity: 1 }, S.s4)
+    .from('#scene_04 .feature-card', { opacity: 0, x: -50, duration: 0.4, ease: 'power2.out' }, S.s4)
+    .from('#scene_04 .label-tag', { opacity: 0, x: 20, duration: 0.25, ease: 'power2.out' }, S.s4 + 0.1)
+    .from('#scene_04 .headline', { opacity: 0, y: 30, duration: 0.3, ease: 'power3.out' }, S.s4 + 0.25)
+    .from('#scene_04 .subhead', { opacity: 0, y: 20, duration: 0.3, ease: 'power2.out' }, S.s4 + 0.45)
+    .from('#scene_04 .subtitle', { opacity: 0, duration: 0.2 }, S.s4 + 0.1)
+    .to('#scene_04 .subtitle', { opacity: 0, duration: 0.2 }, S.s5 - 0.3)
+    .to('#scene_04', { opacity: 0, duration: 0.3 }, S.s5 - 0.3);
+
+  // ── scene_05: feature_3 ─────────────────────────────────────────────
+  tl.set('#scene_05', { opacity: 1 }, S.s5)
+    .from('#scene_05 .label-tag', { opacity: 0, x: -20, duration: 0.25, ease: 'power2.out' }, S.s5)
+    .from('#scene_05 .headline', { opacity: 0, y: 30, duration: 0.3, ease: 'power3.out' }, S.s5 + 0.15)
+    .from('#scene_05 .subhead', { opacity: 0, y: 20, duration: 0.3, ease: 'power2.out' }, S.s5 + 0.35)
+    .from('#scene_05 .feature-card', { opacity: 0, x: 50, duration: 0.4, ease: 'power2.out' }, S.s5 + 0.2)
+    .from('#scene_05 .subtitle', { opacity: 0, duration: 0.2 }, S.s5 + 0.1)
+    .to('#scene_05 .subtitle', { opacity: 0, duration: 0.2 }, S.s6 - 0.3)
+    .to('#scene_05', { opacity: 0, duration: 0.3 }, S.s6 - 0.3);
+
+  // ── scene_06: cta ───────────────────────────────────────────────────
+  tl.set('#scene_06', { opacity: 1 }, S.s6)
+    .from('#scene_06 .headline', { scale: 0.9, opacity: 0, duration: 0.35, ease: 'power4.out' }, S.s6)
+    .from('#scene_06 .subhead', { opacity: 0, y: 20, duration: 0.3, ease: 'power2.out' }, S.s6 + 0.3)
+    .from('#scene_06 .cta-btn', { y: 20, opacity: 0, duration: 0.3, ease: 'power3.out' }, S.s6 + 0.5)
+    .from('#scene_06 .subtitle', { opacity: 0, duration: 0.2 }, S.s6 + 0.1)
+    .to('#scene_06', { opacity: 0, duration: 0.4, ease: 'none' }, S.s6 + 5.6);
+
+  // ── Register ──────────────────────────────────────────────────────────
+  window.__timelines.push(tl);
+
+  if (window.location.protocol === 'file:') {
+    const btn = document.createElement('button');
+    btn.textContent = '▶ Play Preview';
+    Object.assign(btn.style, {
+      position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
+      padding: '12px 32px', background: '#6366F1', color: '#FFF',
+      border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: '700',
+      cursor: 'pointer', zIndex: '9999'
+    });
+    btn.onclick = () => { tl.restart(); };
+    document.body.appendChild(btn);
+  }
+</script>
+</body>
+</html>

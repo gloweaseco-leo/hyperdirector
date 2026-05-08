@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "hyperdirector/edit-request.schema.json",
+  "title": "HyperDirector Edit Request",
+  "description": "Structured instruction for a secondary edit pass on an existing generated video. Saved as edit-instructions.md (human) and passed to the agent as structured JSON.",
+  "type": "object",
+  "required": ["target_scene_ids", "edit_type", "user_instruction", "expected_output"],
+  "additionalProperties": false,
+  "properties": {
+    "edit_id": {
+      "type": "string",
+      "description": "Optional unique identifier for this edit request. Useful for tracking iterative revisions. Example: edit-v2-20260507."
+    },
+    "source_storyboard": {
+      "type": "string",
+      "description": "Relative path to the storyboard.json being edited. Defaults to output/storyboard.json."
+    },
+    "target_scene_ids": {
+      "type": "array",
+      "minItems": 1,
+      "description": "List of scene IDs to be modified. Use ['all'] to apply edits to every scene.",
+      "items": {
+        "type": "string",
+        "pattern": "^(scene_[0-9]{2}|all)$",
+        "description": "Scene identifier in format scene_01 ... scene_12, or the literal string 'all'."
+      }
+    },
+    "edit_type": {
+      "type": "string",
+      "enum": [
+        "copy_rewrite",
+        "visual_redesign",
+        "timing_adjust",
+        "transition_change",
+        "cta_update",
+        "brand_refresh",
+        "scene_add",
+        "scene_remove",
+        "scene_reorder",
+        "asset_replace",
+        "caption_edit",
+        "tone_shift",
+        "full_regenerate"
+      ],
+      "description": "Primary category of the edit. Guides the agent on which parts of the storyboard to touch. copy_rewrite = text/caption only; visual_redesign = layout and animation; timing_adjust = duration changes only; full_regenerate = rebuild from scratch using revised brief."
+    },
+    "user_instruction": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 1000,
+      "description": "Plain-language instruction from the user describing what to change and why. The agent treats this as the primary directive."
+    },
+    "reference_examples": {
+      "type": "array",
+      "description": "Optional list of reference materials (images, URLs, or file paths) illustrating the desired direction.",
+      "items": {
+        "type": "object",
+        "required": ["type", "value"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["url", "file_path", "description"],
+            "description": "Reference type."
+          },
+          "value": {
+            "type": "string",
+            "description": "The URL, relative file path, or plain-text description."
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "What aspect of this reference to borrow. Example: 'use its color palette' or 'match this pacing'."
+          }
+        }
+      }
+    },
+    "preserve_brand": {
+      "type": "boolean",
+      "default": true,
+      "description": "If true, the edit must keep all brand-kit colors, fonts, and motion language intact. Set to false only for full brand refresh edits."
+    },
+    "preserve_timing": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, scene durations must not change during the edit. Only copy and visuals may be modified."
+    },
+    "preserve_scenes": {
+      "type": "array",
+      "description": "Scene IDs explicitly excluded from modification, even if they fall within target_scene_ids.",
+      "items": {
+        "type": "string",
+        "pattern": "^scene_[0-9]{2}$"
+      }
+    },
+    "tone_override": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "If provided, override the brand voice tone for this edit only. Example: 'more playful, less formal'."
+    },
+    "expected_output": {
+      "type": "object",
+      "required": ["format"],
+      "description": "Describes what the agent should produce as the result of this edit.",
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": ["updated_storyboard_json", "updated_html", "updated_both", "patch_only"],
+          "description": "updated_storyboard_json = rewrite storyboard.json only; updated_html = rewrite index.html only; updated_both = rewrite both; patch_only = return a diff/patch without applying."
+        },
+        "re_render": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to trigger a full re-render to MP4 after the edit is applied."
+        },
+        "write_edit_report": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to append a summary of changes to output/edit-instructions.md."
+        },
+        "output_path": {
+          "type": "string",
+          "description": "Custom output directory if different from default output/. Example: output/v2/."
+        }
+      }
+    }
+  }
+}

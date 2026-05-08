@@ -1,0 +1,63 @@
+# HyperDirector
+
+> 面向 Hermes 的结构化视频导演 Skill Pack，底层渲染由 [HyperFrames](https://github.com/heygen-com/hyperframes) 完成。  
+> English → [README.md](./README.md)
+
+---
+
+## 这是什么？
+
+HyperDirector 把「需求 → brief → 分镜 → 设计说明 → HyperFrames HTML → 质检 → 渲染」串成一条可重复的工作流，适合文章/产品页/README/PRD 等素材转成 15–60 秒的动效短视频。
+
+---
+
+## 仓库结构（开源公开部分）
+
+```
+HyperDirector/               ← 建议作为 GitHub 公开仓库根目录
+├── LICENSE                  ← Apache 2.0
+├── NOTICE
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── RELEASE_NOTES_v0.1.md
+├── README.md
+├── README.zh-CN.md          ← 本文件
+├── hyperdirector/           ← Hermes Skill Pack（复制到 Hermes skills 目录）
+│   ├── SKILL.md
+│   ├── prompts/、rules/、schemas/、templates/、workflows/、docs/、qa/、examples/ …
+│   └── scripts/             ← check-env、校验脚本、leak-scan（发布前扫描）
+└── output/                  ← 本地生成物（默认不提交）
+```
+
+商业增强内容（高阶模板、客户交付、真实案例等）应放在**独立私有仓库**；请勿将商业增强目录或内部 PRD 推送到公开远程。
+
+---
+
+## 快速开始
+
+```bash
+node hyperdirector/scripts/check-env.js
+node hyperdirector/scripts/leak-scan.js
+cp hyperdirector/brand/brand-kit.example.json ./brand-kit.json
+```
+
+将 `hyperdirector/` 安装到 Hermes skills 路径后，可直接对 Hermes 说：
+
+> 使用 HyperDirector，把下面这篇文章做成 30 秒竖屏短视频，使用我的 brand-kit。
+
+---
+
+## 文档入口
+
+| 文档 | 说明 |
+|------|------|
+| [hyperdirector/README.zh-CN.md](./hyperdirector/README.zh-CN.md) | Skill Pack 完整说明与目录索引 |
+| [hyperdirector/docs/quickstart.zh-CN.md](./hyperdirector/docs/quickstart.zh-CN.md) | 快速上手 |
+| [hyperdirector/CAPABILITY_BOUNDARY.zh-CN.md](./hyperdirector/CAPABILITY_BOUNDARY.zh-CN.md) | 能力边界（适合 / 降级 / 拒绝） |
+
+---
+
+## 致谢
+
+- [HyperFrames](https://github.com/heygen-com/hyperframes)（Apache 2.0）
+- [GSAP](https://gsap.com/)（商业使用请自行查阅 GreenSock 许可）

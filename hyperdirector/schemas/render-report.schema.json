@@ -1,0 +1,229 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "hyperdirector/render-report.schema.json",
+  "title": "HyperDirector Render Report",
+  "description": "Records the lint, preview, and render results for a single video generation run. Written to output/render-report.md (human) and stored as JSON for programmatic access.",
+  "type": "object",
+  "required": ["task_id", "template", "aspect_ratio", "duration_seconds", "lint_result", "render_result"],
+  "additionalProperties": false,
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "description": "Unique identifier for this render run. Format: kebab-cased project title + ISO timestamp. Example: saas-demo-20260507T1200Z."
+    },
+    "template": {
+      "type": "string",
+      "enum": ["tiktok-vertical-kit", "saas-demo-kit", "ai-knowledge-explainer-kit"],
+      "description": "Template used for this render run. Must match brief.template."
+    },
+    "aspect_ratio": {
+      "type": "string",
+      "enum": ["9:16", "16:9", "1:1"],
+      "description": "Canvas aspect ratio of the rendered video."
+    },
+    "duration_seconds": {
+      "type": "number",
+      "minimum": 10,
+      "maximum": 300,
+      "description": "Target total duration in seconds. Taken from brief."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of when this render report was created."
+    },
+    "lint_result": {
+      "type": "object",
+      "required": ["passed", "issues"],
+      "description": "Output of the structural lint check on the generated HTML (index.html / final.mp4).",
+      "additionalProperties": false,
+      "properties": {
+        "passed": {
+          "type": "boolean",
+          "description": "True if all lint checks passed (zero blocking issues)."
+        },
+        "issues": {
+          "type": "array",
+          "description": "List of lint findings. Empty array means clean.",
+          "items": {
+            "type": "object",
+            "required": ["severity", "code", "message"],
+            "additionalProperties": false,
+            "properties": {
+              "severity": {
+                "type": "string",
+                "enum": ["error", "warning", "info"],
+                "description": "error = blocking, must fix; warning = degraded quality; info = advisory."
+              },
+              "code": {
+                "type": "string",
+                "description": "Machine-readable lint rule code. Example: DURATION_MISMATCH, MISSING_CTA, CONTRAST_FAIL."
+              },
+              "message": {
+                "type": "string",
+                "description": "Human-readable description of the issue."
+              },
+              "scene_id": {
+                "type": "string",
+                "description": "Scene affected, if applicable. Format: scene_01."
+              },
+              "auto_fixable": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether this issue was or can be automatically fixed."
+              }
+            }
+          }
+        }
+      }
+    },
+    "preview_result": {
+      "type": "object",
+      "description": "Results from headless browser preview check of index.html / preview.html.",
+      "additionalProperties": false,
+      "properties": {
+        "passed": {
+          "type": "boolean",
+          "description": "True if preview rendered without JS errors and all scenes displayed."
+        },
+        "screenshot_path": {
+          "type": "string",
+          "description": "Relative path to preview screenshot, if captured."
+        },
+        "console_errors": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "JavaScript console errors encountered during headless preview."
+        },
+        "scenes_verified": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of scenes that rendered correctly in preview."
+        },
+        "scenes_total": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total scenes expected."
+        }
+      }
+    },
+    "render_result": {
+      "type": "object",
+      "required": ["status"],
+      "description": "Outcome of the final MP4 render step.",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["success", "partial", "failed", "skipped"],
+          "description": "success = final.mp4 produced; partial = rendered with known degradation; failed = render aborted; skipped = HTML-only output."
+        },
+        "output_path": {
+          "type": "string",
+          "description": "Relative path to the rendered MP4 file. Example: output/final.mp4."
+        },
+        "actual_duration_seconds": {
+          "type": "number",
+          "description": "Actual duration of the rendered MP4, measured after encoding."
+        },
+        "file_size_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "File size of the rendered MP4 in bytes."
+        },
+        "encoder": {
+          "type": "string",
+          "description": "Encoder used. Example: puppeteer+ffmpeg, ScreenToGif, manual."
+        },
+        "error_message": {
+          "type": "string",
+          "description": "Error message if render failed."
+        }
+      }
+    },
+    "fixes_applied": {
+      "type": "array",
+      "description": "List of auto-fixes applied during the generate-fix-verify loop.",
+      "items": {
+        "type": "object",
+        "required": ["fix_type", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "fix_type": {
+            "type": "string",
+            "enum": ["duration_clamp", "contrast_adjust", "font_fallback", "missing_cta_inject", "safe_zone_reclip", "scene_reorder", "asset_placeholder", "other"],
+            "description": "Category of fix applied."
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 300,
+            "description": "Human-readable description of what was changed and why."
+          },
+          "scene_id": {
+            "type": "string",
+            "description": "Scene affected by this fix, if applicable."
+          },
+          "iteration": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Fix loop iteration number (1-indexed) in which this fix was applied."
+          }
+        }
+      }
+    },
+    "output_files": {
+      "type": "array",
+      "description": "List of files produced in the output directory for this run.",
+      "items": {
+        "type": "object",
+        "required": ["path", "role"],
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Relative path from workspace root. Example: output/final.mp4."
+          },
+          "role": {
+            "type": "string",
+            "enum": ["final_video", "preview_html", "index_html", "storyboard", "script", "brief", "brand_used", "asset", "design_doc", "render_report", "edit_instructions", "other"],
+            "description": "Semantic role of this output file."
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "File size in bytes at time of report generation."
+          }
+        }
+      }
+    },
+    "known_issues": {
+      "type": "array",
+      "description": "Acknowledged limitations or degradations in this render that were not auto-fixed. Surfaced in render-report.md for human review.",
+      "items": {
+        "type": "object",
+        "required": ["description"],
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "type": "string",
+            "maxLength": 400,
+            "description": "Plain-language description of the known issue."
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["low", "medium", "high"],
+            "default": "medium",
+            "description": "Impact level of this known issue on output quality."
+          },
+          "workaround": {
+            "type": "string",
+            "maxLength": 400,
+            "description": "Suggested manual workaround or next step for the user."
+          }
+        }
+      }
+    }
+  }
+}

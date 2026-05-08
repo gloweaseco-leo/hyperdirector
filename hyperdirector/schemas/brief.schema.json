@@ -1,0 +1,180 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "hyperdirector/brief.schema.json",
+  "title": "HyperDirector Brief",
+  "description": "Structured video requirements generated from user input. Input to storyboard and HTML composition stages.",
+  "type": "object",
+  "required": ["title", "platform", "aspect_ratio", "duration_seconds", "goal", "template"],
+  "additionalProperties": false,
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "description": "Short descriptive title for the video project. Used as project slug (kebab-cased)."
+    },
+    "platform": {
+      "type": "string",
+      "enum": ["video_wechat", "tiktok", "youtube_shorts", "youtube", "bilibili", "instagram", "linkedin", "internal", "other"],
+      "description": "Target publishing platform. Influences aspect ratio defaults and pacing."
+    },
+    "aspect_ratio": {
+      "type": "string",
+      "enum": ["9:16", "16:9", "1:1"],
+      "description": "Canvas aspect ratio. 9:16 for vertical short-form, 16:9 for horizontal, 1:1 for square."
+    },
+    "duration_seconds": {
+      "type": "number",
+      "minimum": 10,
+      "maximum": 300,
+      "description": "Total video duration in seconds. Must match sum of storyboard scene durations (±0.5s)."
+    },
+    "audience": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Target audience description. Used to calibrate vocabulary, pace, and content depth."
+    },
+    "goal": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "description": "Primary goal of the video. What should viewers understand or do after watching?"
+    },
+    "tone": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Desired voice and feel. Examples: professional, energetic, calm, technical, conversational."
+    },
+    "input_type": {
+      "type": "string",
+      "enum": ["article", "product_page", "readme", "prd", "data_chart", "prompt", "url", "transcript", "other"],
+      "description": "Type of source material being transformed into video."
+    },
+    "language": {
+      "type": "string",
+      "default": "zh-CN",
+      "examples": ["zh-CN", "en-US", "ja-JP"],
+      "description": "Language for generated script, captions, and on-screen copy. Inferred from user input if absent."
+    },
+    "subtitle_language": {
+      "type": "string",
+      "examples": ["zh-CN", "en-US"],
+      "description": "Language for on-screen captions/subtitles. Defaults to brief.language if absent."
+    },
+    "ui_copy_language": {
+      "type": "string",
+      "examples": ["zh-CN", "en-US"],
+      "description": "Language for CTA buttons and UI overlay copy. Defaults to brief.language if absent."
+    },
+    "template": {
+      "type": "string",
+      "enum": ["tiktok-vertical-kit", "saas-demo-kit", "ai-knowledge-explainer-kit"],
+      "description": "Video template to use. See templates/ directory for each template's scene structure."
+    },
+    "brand_kit": {
+      "type": "string",
+      "default": "default",
+      "description": "Path to brand-kit.json file, or 'default' to use brand/brand-kit.example.json."
+    },
+    "cta_override": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Override the brand kit's default CTA for this specific video."
+    },
+    "hook_requirement": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Specific instruction for the opening hook. Example: 'strong conflict statement in first 3 seconds'."
+    },
+    "scene_count": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 12,
+      "description": "Number of scenes. If absent, derived from template defaults and duration."
+    },
+    "source_materials": {
+      "type": "array",
+      "description": "List of source material references provided by the user for this video.",
+      "items": {
+        "type": "object",
+        "required": ["type", "path_or_url"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["article", "image", "video", "audio", "document", "url", "data", "screenshot"],
+            "description": "Type of the source material."
+          },
+          "path_or_url": {
+            "type": "string",
+            "description": "Relative file path or external URL to the source material."
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 80,
+            "description": "Human-readable label to reference this material in prompts or notes."
+          },
+          "use_for": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Instruction on how this material should be used. Example: 'use as hero background in scene_01'."
+          }
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "description": "Hard constraints that must not be violated during generation.",
+      "additionalProperties": false,
+      "properties": {
+        "no_text_over_logo": {
+          "type": "boolean",
+          "default": true,
+          "description": "Prevent any text elements from overlapping the logo safe zone."
+        },
+        "max_words_per_scene": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 80,
+          "description": "Maximum word count allowed in a single scene's caption."
+        },
+        "required_scenes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["hook", "cta", "product_reveal", "result"]
+          },
+          "description": "Scene purposes that must be included regardless of template defaults."
+        },
+        "forbidden_content": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Topics, phrases, or visual elements that must not appear in the output."
+        },
+        "color_safe_mode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Restrict palette strictly to brand colors only. No decorative fills outside the palette."
+        },
+        "accessibility": {
+          "type": "object",
+          "description": "Accessibility requirements for generated HTML.",
+          "additionalProperties": false,
+          "properties": {
+            "min_contrast_ratio": {
+              "type": "number",
+              "minimum": 3.0,
+              "maximum": 21.0,
+              "default": 4.5,
+              "description": "Minimum WCAG contrast ratio for text over background."
+            },
+            "captions_required": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether visible captions are required on every scene."
+            }
+          }
+        }
+      }
+    }
+  }
+}

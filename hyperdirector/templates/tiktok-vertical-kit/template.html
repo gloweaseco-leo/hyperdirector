@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}} — tiktok-vertical-kit</title>
+  <!-- GSAP 3.12.5 — required, do not change version -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <style>
+    /* ── Brand Kit CSS Variables ────────────────────────────────────────
+       All colors and fonts come from brand-kit.json via these variables.
+       Composer replaces these default values with brand-kit values.
+       ────────────────────────────────────────────────────────────────── */
+    :root {
+      --color-primary:  #0F172A;
+      --color-accent:   #38BDF8;
+      --color-bg:       #F8FAFC;
+      --color-text:     #1E293B;
+      --color-muted:    #64748B;
+      --font-headline:  'Inter', 'Noto Sans SC', sans-serif;
+      --font-body:      'Noto Sans SC', 'PingFang SC', sans-serif;
+
+      /* Derived — do not override via brand-kit */
+      --canvas-w: 1080px;
+      --canvas-h: 1920px;
+      --safe-bottom: 22%;
+      --safe-side: 5%;
+      --pace: 0.2s;
+    }
+
+    /* ── Reset ────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #111; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+
+    /* ── Canvas ───────────────────────────────────────────────────────── */
+    #composition {
+      width: var(--canvas-w);
+      height: var(--canvas-h);
+      position: relative;
+      overflow: hidden;
+      background: var(--color-bg);
+      font-family: var(--font-body);
+    }
+
+    /* ── Scene base ───────────────────────────────────────────────────── */
+    .scene {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 80px var(--safe-side) calc(var(--safe-bottom) + 120px);
+      opacity: 0;
+    }
+    .scene.active { opacity: 1; }
+
+    /* ── Typography ───────────────────────────────────────────────────── */
+    .headline {
+      font-family: var(--font-headline);
+      font-size: 72px;
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--color-primary);
+      text-align: center;
+      letter-spacing: -1px;
+    }
+    .headline .accent { color: var(--color-accent); }
+
+    .subhead {
+      font-family: var(--font-headline);
+      font-size: 36px;
+      font-weight: 600;
+      line-height: 1.3;
+      color: var(--color-text);
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    .body-text {
+      font-size: 28px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--color-text);
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    /* ── Info Card ────────────────────────────────────────────────────── */
+    .card {
+      background: var(--color-primary);
+      border-radius: 24px;
+      padding: 48px 56px;
+      width: 90%;
+      margin-top: 32px;
+    }
+    .card .card-label {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--color-accent);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+    .card .card-headline {
+      font-family: var(--font-headline);
+      font-size: 52px;
+      font-weight: 700;
+      color: #FFFFFF;
+      line-height: 1.2;
+    }
+    .card .card-body {
+      font-size: 26px;
+      color: rgba(255,255,255,0.75);
+      line-height: 1.6;
+      margin-top: 16px;
+    }
+
+    /* ── Number Badge ─────────────────────────────────────────────────── */
+    .point-number {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--color-accent);
+      color: var(--color-primary);
+      font-family: var(--font-headline);
+      font-size: 42px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    /* ── CTA Button ───────────────────────────────────────────────────── */
+    .cta-btn {
+      background: var(--color-accent);
+      color: var(--color-primary);
+      font-family: var(--font-headline);
+      font-size: 32px;
+      font-weight: 700;
+      padding: 28px 64px;
+      border-radius: 64px;
+      margin-top: 40px;
+      border: none;
+      cursor: default;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Accent line ──────────────────────────────────────────────────── */
+    .accent-line {
+      width: 80px;
+      height: 6px;
+      background: var(--color-accent);
+      border-radius: 3px;
+      margin: 20px auto;
+    }
+
+    /* ── Subtitle / Caption ───────────────────────────────────────────── */
+    .subtitle {
+      position: absolute;
+      bottom: var(--safe-bottom);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 88%;
+      background: rgba(0, 0, 0, 0.65);
+      color: #FFFFFF;
+      font-family: var(--font-body);
+      font-size: 32px;
+      font-weight: 400;
+      line-height: 1.5;
+      padding: 16px 24px;
+      border-radius: 8px;
+      text-align: center;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      z-index: 100;
+    }
+
+    /* ── Hook scene overrides ─────────────────────────────────────────── */
+    #scene_01 { background: var(--color-primary); }
+    #scene_01 .headline { color: #FFFFFF; font-size: 88px; }
+    #scene_01 .headline .accent { color: var(--color-accent); }
+
+    /* ── CTA scene overrides ──────────────────────────────────────────── */
+    #scene_05 { background: var(--color-primary); }
+    #scene_05 .headline { color: #FFFFFF; font-size: 64px; }
+
+    /* ── Responsive preview scaling ──────────────────────────────────── */
+    @media (max-width: 1100px) {
+      #composition {
+        width: 360px;
+        height: 640px;
+        transform-origin: top center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="composition" data-aspect-ratio="9:16">
+
+  <!-- ── scene_01: hook ──────────────────────────────────────────────── -->
+  <section id="scene_01" class="scene" data-duration="4" data-transition="fast_scale_in">
+    <h1 class="headline">
+      <span class="accent">{{hook_accent}}</span><br>
+      {{hook_headline}}
+    </h1>
+    <div class="accent-line"></div>
+    <p class="subhead" style="color:rgba(255,255,255,0.8);">{{hook_subhead}}</p>
+    <div class="subtitle">{{caption_01}}</div>
+  </section>
+
+  <!-- ── scene_02: point_1 ───────────────────────────────────────────── -->
+  <section id="scene_02" class="scene" data-duration="8" data-transition="slide_up">
+    <div class="point-number">1</div>
+    <h2 class="headline">{{point1_headline}}</h2>
+    <div class="card">
+      <div class="card-label">Point 01</div>
+      <div class="card-headline">{{point1_card_title}}</div>
+      <div class="card-body">{{point1_card_body}}</div>
+    </div>
+    <div class="subtitle">{{caption_02}}</div>
+  </section>
+
+  <!-- ── scene_03: point_2 ───────────────────────────────────────────── -->
+  <section id="scene_03" class="scene" data-duration="8" data-transition="slide_up">
+    <div class="point-number">2</div>
+    <h2 class="headline">{{point2_headline}}</h2>
+    <div class="card">
+      <div class="card-label">Point 02</div>
+      <div class="card-headline">{{point2_card_title}}</div>
+      <div class="card-body">{{point2_card_body}}</div>
+    </div>
+    <div class="subtitle">{{caption_03}}</div>
+  </section>
+
+  <!-- ── scene_04: point_3 ───────────────────────────────────────────── -->
+  <section id="scene_04" class="scene" data-duration="8" data-transition="slide_up">
+    <div class="point-number">3</div>
+    <h2 class="headline">{{point3_headline}}</h2>
+    <div class="card">
+      <div class="card-label">Point 03</div>
+      <div class="card-headline">{{point3_card_title}}</div>
+      <div class="card-body">{{point3_card_body}}</div>
+    </div>
+    <div class="subtitle">{{caption_04}}</div>
+  </section>
+
+  <!-- ── scene_05: cta ───────────────────────────────────────────────── -->
+  <section id="scene_05" class="scene" data-duration="4" data-transition="slide_up">
+    <h2 class="headline">{{cta_headline}}</h2>
+    <div class="accent-line"></div>
+    <p class="subhead" style="color:rgba(255,255,255,0.75); font-size:30px;">{{cta_subhead}}</p>
+    <button class="cta-btn">{{cta_button}}</button>
+    <div class="subtitle">{{caption_05}}</div>
+  </section>
+
+</div><!-- /#composition -->
+
+<script>
+  // ── HyperFrames GSAP Timeline ──────────────────────────────────────────
+  // Rules: paused:true, registered to window.__timelines, no Math.random(),
+  //        no repeat:-1, all durations fit within data-duration values.
+  // See: rules/gsap-deterministic-rules.md
+  // ────────────────────────────────────────────────────────────────────────
+
+  window.__timelines = window.__timelines || [];
+
+  const tl = gsap.timeline({ paused: true });
+
+  // ── Scene offsets (cumulative seconds) ──────────────────────────────
+  // scene_01: 0s      (duration: 4s)
+  // scene_02: 4s      (duration: 8s)
+  // scene_03: 12s     (duration: 8s)
+  // scene_04: 20s     (duration: 8s)
+  // scene_05: 28s     (duration: 4s)
+  // total:    32s
+  const S = { s1: 0, s2: 4, s3: 12, s4: 20, s5: 28 };
+
+  // ── scene_01: hook — fast_scale_in ──────────────────────────────────
+  tl.set('#scene_01', { opacity: 1 }, S.s1)
+    .from('#scene_01 .headline', { scale: 0.7, opacity: 0, duration: 0.2, ease: 'power4.out' }, S.s1)
+    .from('#scene_01 .accent-line', { scaleX: 0, transformOrigin: 'left', duration: 0.15, ease: 'power3.out' }, S.s1 + 0.15)
+    .from('#scene_01 .subhead', { opacity: 0, y: 20, duration: 0.2, ease: 'power2.out' }, S.s1 + 0.25)
+    .from('#scene_01 .subtitle', { opacity: 0, y: 10, duration: 0.2, ease: 'power2.out' }, S.s1 + 0.1)
+    .to('#scene_01 .subtitle', { opacity: 0, duration: 0.2 }, S.s2 - 0.3)
+    .to('#scene_01', { opacity: 0, duration: 0.25 }, S.s2 - 0.25);
+
+  // ── scene_02: point_1 — slide_up ────────────────────────────────────
+  tl.set('#scene_02', { opacity: 1 }, S.s2)
+    .from('#scene_02 .point-number', { scale: 0, opacity: 0, duration: 0.25, ease: 'back.out(1.5)' }, S.s2)
+    .from('#scene_02 .headline', { opacity: 0, y: 40, duration: 0.2, ease: 'power3.out' }, S.s2 + 0.2)
+    .from('#scene_02 .card', { opacity: 0, y: 50, duration: 0.3, ease: 'power2.out' }, S.s2 + 0.35)
+    .from('#scene_02 .subtitle', { opacity: 0, y: 10, duration: 0.2, ease: 'power2.out' }, S.s2 + 0.1)
+    .to('#scene_02 .subtitle', { opacity: 0, duration: 0.2 }, S.s3 - 0.3)
+    .to('#scene_02', { opacity: 0, duration: 0.25 }, S.s3 - 0.25);
+
+  // ── scene_03: point_2 — slide_up ────────────────────────────────────
+  tl.set('#scene_03', { opacity: 1 }, S.s3)
+    .from('#scene_03 .point-number', { scale: 0, opacity: 0, duration: 0.25, ease: 'back.out(1.5)' }, S.s3)
+    .from('#scene_03 .headline', { opacity: 0, y: 40, duration: 0.2, ease: 'power3.out' }, S.s3 + 0.2)
+    .from('#scene_03 .card', { opacity: 0, y: 50, duration: 0.3, ease: 'power2.out' }, S.s3 + 0.35)
+    .from('#scene_03 .subtitle', { opacity: 0, y: 10, duration: 0.2, ease: 'power2.out' }, S.s3 + 0.1)
+    .to('#scene_03 .subtitle', { opacity: 0, duration: 0.2 }, S.s4 - 0.3)
+    .to('#scene_03', { opacity: 0, duration: 0.25 }, S.s4 - 0.25);
+
+  // ── scene_04: point_3 — slide_up ────────────────────────────────────
+  tl.set('#scene_04', { opacity: 1 }, S.s4)
+    .from('#scene_04 .point-number', { scale: 0, opacity: 0, duration: 0.25, ease: 'back.out(1.5)' }, S.s4)
+    .from('#scene_04 .headline', { opacity: 0, y: 40, duration: 0.2, ease: 'power3.out' }, S.s4 + 0.2)
+    .from('#scene_04 .card', { opacity: 0, y: 50, duration: 0.3, ease: 'power2.out' }, S.s4 + 0.35)
+    .from('#scene_04 .subtitle', { opacity: 0, y: 10, duration: 0.2, ease: 'power2.out' }, S.s4 + 0.1)
+    .to('#scene_04 .subtitle', { opacity: 0, duration: 0.2 }, S.s5 - 0.3)
+    .to('#scene_04', { opacity: 0, duration: 0.25 }, S.s5 - 0.25);
+
+  // ── scene_05: cta — slide_up ─────────────────────────────────────────
+  tl.set('#scene_05', { opacity: 1 }, S.s5)
+    .from('#scene_05 .headline', { scale: 0.85, opacity: 0, duration: 0.25, ease: 'power4.out' }, S.s5)
+    .from('#scene_05 .accent-line', { scaleX: 0, transformOrigin: 'left', duration: 0.15, ease: 'power3.out' }, S.s5 + 0.2)
+    .from('#scene_05 .subhead', { opacity: 0, y: 20, duration: 0.2, ease: 'power2.out' }, S.s5 + 0.3)
+    .from('#scene_05 .cta-btn', { y: 24, opacity: 0, duration: 0.2, ease: 'power3.out' }, S.s5 + 0.45)
+    .from('#scene_05 .subtitle', { opacity: 0, y: 10, duration: 0.2, ease: 'power2.out' }, S.s5 + 0.1)
+    .to('#scene_05', { opacity: 0, duration: 0.4, ease: 'none' }, S.s5 + 3.6);
+
+  // ── Register to window.__timelines ────────────────────────────────────
+  window.__timelines.push(tl);
+
+  // ── Preview play button (removed in render context) ───────────────────
+  if (window.location.protocol === 'file:') {
+    const btn = document.createElement('button');
+    btn.textContent = '▶ Play Preview';
+    Object.assign(btn.style, {
+      position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
+      padding: '12px 32px', background: '#38BDF8', color: '#0F172A',
+      border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: '700',
+      cursor: 'pointer', zIndex: '9999'
+    });
+    btn.onclick = () => { tl.restart(); };
+    document.body.appendChild(btn);
+  }
+</script>
+</body>
+</html>

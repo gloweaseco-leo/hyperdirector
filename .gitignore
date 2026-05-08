@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Build / output
+output/
+dist/
+build/
+*.log
+npm-debug.log*
+
+# HyperFrames / local render artifacts
+*.mp4
+*.webm
+.cache/
+
+# Optional: local brand assets (keep examples in repo; ignore real kits)
+brand-kit.json
+**/brand/private/
+
+# Cursor / local agent (do not publish machine-specific paths)
+.mcps/
+agent-transcripts/

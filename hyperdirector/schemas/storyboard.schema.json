@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "hyperdirector/storyboard.schema.json",
+  "title": "HyperDirector Storyboard",
+  "description": "Scene-by-scene video structure. The structural contract between storyboard and index.html. Duration sum must equal brief.duration_seconds.",
+  "type": "object",
+  "required": ["title", "total_duration", "aspect_ratio", "template", "scenes"],
+  "additionalProperties": false,
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Video project title. Should match brief.title."
+    },
+    "total_duration": {
+      "type": "number",
+      "minimum": 10,
+      "maximum": 300,
+      "description": "Sum of all scene durations. Must equal brief.duration_seconds (±0.5s tolerance)."
+    },
+    "aspect_ratio": {
+      "type": "string",
+      "enum": ["9:16", "16:9", "1:1"],
+      "description": "Canvas aspect ratio. Must match brief.aspect_ratio."
+    },
+    "template": {
+      "type": "string",
+      "enum": ["tiktok-vertical-kit", "saas-demo-kit", "ai-knowledge-explainer-kit"],
+      "description": "Template used for this storyboard. Must match brief.template."
+    },
+    "scenes": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 12,
+      "description": "Ordered list of scenes. Order matches timeline position.",
+      "items": {
+        "type": "object",
+        "required": ["id", "duration", "purpose", "headline", "visual", "caption"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^scene_[0-9]{2}$",
+            "description": "Unique scene identifier. Format: scene_01, scene_02, ... Used as HTML element ID prefix."
+          },
+          "duration": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 60,
+            "description": "Scene duration in seconds. Must match data-duration on the scene's root HTML element."
+          },
+          "purpose": {
+            "type": "string",
+            "enum": ["hook", "context", "point_1", "point_2", "point_3", "mechanism", "mechanism_1", "mechanism_2", "use_case", "problem", "product_reveal", "feature_1", "feature_2", "feature_3", "result", "big_claim", "action", "cta"],
+            "description": "Narrative role of this scene. Drives pacing and visual intensity decisions."
+          },
+          "headline": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "description": "Main on-screen headline text. Should be punchy and readable. Language follows brief.language."
+          },
+          "visual": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300,
+            "description": "Visual description for the composer. Describes layout, elements, animation intent. Plain text, no code."
+          },
+          "caption": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 150,
+            "description": "Subtitle/caption text for this scene. Displayed in the subtitle safe zone. Language follows brief.language."
+          },
+          "transition": {
+            "type": "string",
+            "enum": ["fade_in", "fade_out", "slide_up", "slide_down", "slide_left", "slide_right", "scale_in", "scale_out", "fast_scale_in", "wipe", "blur_crossfade", "push_slide", "zoom_through", "none"],
+            "default": "fade_in",
+            "description": "Entrance transition for this scene. Maps to a GSAP ease pattern in the composer."
+          },
+          "brand_accent": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, apply brand accent color prominently in this scene (e.g., for hook and CTA scenes)."
+          },
+          "assets": {
+            "type": "array",
+            "description": "Optional list of asset references needed for this scene.",
+            "items": {
+              "type": "object",
+              "required": ["type", "path"],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["image", "video", "audio", "lottie"]
+                },
+                "path": {
+                  "type": "string",
+                  "description": "Relative path from output project root. Example: assets/screenshot-01.png"
+                },
+                "alt": {
+                  "type": "string",
+                  "description": "Description of the asset for accessibility and agent context."
+                }
+              }
+            }
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Director notes for the composer. Clarifications, special effects, or implementation hints not captured in other fields. Plain text only."
+          }
+        }
+      }
+    }
+  }
+}

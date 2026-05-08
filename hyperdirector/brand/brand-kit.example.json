@@ -1,0 +1,62 @@
+{
+  "brand_name": "Your Brand Name",
+  "locale": "zh-CN",
+  "default_output_language": "zh-CN",
+  "language_policy": {
+    "script_language": "zh-CN",
+    "subtitle_language": "zh-CN",
+    "ui_copy_language": "zh-CN",
+    "technical_terms": "keep_english_with_chinese_explanation"
+  },
+  "colors": {
+    "primary": "#111827",
+    "accent": "#6366F1",
+    "background": "#FFFFFF",
+    "text_primary": "#1F2937",
+    "text_secondary": "#6B7280"
+  },
+  "fonts": {
+    "headline": "Inter",
+    "body": "Noto Sans SC",
+    "code": "JetBrains Mono"
+  },
+  "motion_language": {
+    "pace": "medium",
+    "style": "clean_tech",
+    "transitions": ["slide_up", "scale_in", "fade"],
+    "entrance_default": "fade_slide_up",
+    "exit_default": "fade_out"
+  },
+  "voice": {
+    "tone": "Professional, direct, information-dense. Speak to practitioners, not beginners. Prefer concrete over abstract.",
+    "avoid": [
+      "excessive hype",
+      "vague slogans",
+      "cheap stock icons",
+      "one-word-per-line layout",
+      "overuse of quotation marks for emphasis",
+      "empty intensifiers: amazing, incredible, revolutionary"
+    ],
+    "tts_voice": "af_heart",
+    "tts_speed": 1.0
+  },
+  "cta": {
+    "default": "Follow [Your Brand Name] for more",
+    "subscription": "Join our community",
+    "follow_social": "Follow us on [platform]",
+    "download": "Download the full guide",
+    "trial": "Start your free trial"
+  },
+  "assets": {
+    "logo": "brand/assets/logo.png",
+    "watermark": "brand/assets/watermark.png",
+    "background_default": "brand/assets/bg-default.jpg",
+    "music_default": "brand/assets/music-default.mp3"
+  },
+  "safe_zone": {
+    "top_percent": 10,
+    "bottom_percent": 22,
+    "left_percent": 5,
+    "right_percent": 5
+  }
+}

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}} — ai-knowledge-explainer-kit</title>
+  <!-- GSAP 3.12.5 — required, do not change version -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <style>
+    /* ── Brand Kit CSS Variables ──────────────────────────────────────── */
+    :root {
+      --color-primary:  #0F172A;
+      --color-accent:   #38BDF8;
+      --color-bg:       #F1F5F9;
+      --color-text:     #1E293B;
+      --color-muted:    #64748B;
+      --font-headline:  'Inter', 'Noto Sans SC', sans-serif;
+      --font-body:      'Noto Sans SC', 'PingFang SC', sans-serif;
+
+      /* Derived */
+      --canvas-w: 1080px;
+      --canvas-h: 1920px;
+      --safe-bottom: 22%;
+      --safe-side: 5%;
+
+      /* Tech-specific tokens */
+      --node-bg: rgba(56, 189, 248, 0.12);
+      --node-border: rgba(56, 189, 248, 0.35);
+      --grid-line: rgba(56, 189, 248, 0.06);
+      --code-bg: rgba(15, 23, 42, 0.85);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #060B14; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+
+    /* ── Canvas ───────────────────────────────────────────────────────── */
+    #composition {
+      width: var(--canvas-w);
+      height: var(--canvas-h);
+      position: relative;
+      overflow: hidden;
+      background: var(--color-primary);
+      font-family: var(--font-body);
+    }
+
+    /* ── Background grid (tech texture) ──────────────────────────────── */
+    #composition::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Scene base ───────────────────────────────────────────────────── */
+    .scene {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 80px var(--safe-side) calc(var(--safe-bottom) + 120px);
+      opacity: 0;
+      z-index: 1;
+    }
+
+    /* ── Typography ───────────────────────────────────────────────────── */
+    .headline {
+      font-family: var(--font-headline);
+      font-size: 72px;
+      font-weight: 800;
+      line-height: 1.15;
+      color: #FFFFFF;
+      text-align: center;
+      letter-spacing: -1px;
+    }
+    .headline .accent { color: var(--color-accent); }
+
+    .subhead {
+      font-size: 30px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.65);
+      text-align: center;
+      margin-top: 20px;
+      max-width: 880px;
+    }
+
+    .section-label {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-label::before {
+      content: '';
+      width: 24px;
+      height: 2px;
+      background: var(--color-accent);
+    }
+
+    /* ── Big Claim Scene — oversized number ──────────────────────────── */
+    .big-stat {
+      font-family: var(--font-headline);
+      font-size: 160px;
+      font-weight: 900;
+      color: var(--color-accent);
+      line-height: 1;
+      letter-spacing: -4px;
+    }
+    .big-stat-label {
+      font-size: 34px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.75);
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* ── Flow / Architecture nodes ────────────────────────────────────── */
+    .flow-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      width: 90%;
+      margin-top: 40px;
+    }
+    .flow-node {
+      flex: 1;
+      background: var(--node-bg);
+      border: 1px solid var(--node-border);
+      border-radius: 12px;
+      padding: 24px 16px;
+      text-align: center;
+    }
+    .flow-node .node-icon {
+      font-size: 36px;
+      line-height: 1;
+      margin-bottom: 10px;
+      color: var(--color-accent);
+    }
+    .flow-node .node-label {
+      font-size: 22px;
+      font-weight: 600;
+      color: #FFFFFF;
+      line-height: 1.3;
+    }
+    .flow-node .node-sub {
+      font-size: 18px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 6px;
+    }
+    .flow-arrow {
+      flex: 0 0 32px;
+      text-align: center;
+      font-size: 28px;
+      color: var(--color-accent);
+      opacity: 0.7;
+    }
+
+    /* ── Mechanism card (dark) ────────────────────────────────────────── */
+    .mech-card {
+      width: 90%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-left: 3px solid var(--color-accent);
+      border-radius: 12px;
+      padding: 36px 40px;
+      margin-top: 28px;
+      text-align: left;
+    }
+    .mech-card .mech-title {
+      font-family: var(--font-headline);
+      font-size: 36px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 14px;
+    }
+    .mech-card .mech-body {
+      font-size: 26px;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.7;
+    }
+
+    /* ── Use case / step list ─────────────────────────────────────────── */
+    .step-list {
+      width: 90%;
+      margin-top: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 24px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 12px;
+      padding: 24px 28px;
+    }
+    .step-num {
+      flex: 0 0 40px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--color-accent);
+      color: var(--color-primary);
+      font-weight: 800;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 4px;
+    }
+    .step-content .step-title {
+      font-size: 28px;
+      font-weight: 600;
+      color: #FFFFFF;
+      margin-bottom: 6px;
+    }
+    .step-content .step-desc {
+      font-size: 22px;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.5;
+    }
+
+    /* ── Subtitle ─────────────────────────────────────────────────────── */
+    .subtitle {
+      position: absolute;
+      bottom: var(--safe-bottom);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 88%;
+      background: rgba(0, 0, 0, 0.75);
+      color: #FFFFFF;
+      font-family: var(--font-body);
+      font-size: 30px;
+      font-weight: 400;
+      line-height: 1.5;
+      padding: 14px 22px;
+      border-radius: 8px;
+      text-align: center;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      z-index: 100;
+    }
+
+    /* ── CTA scene ────────────────────────────────────────────────────── */
+    #scene_05 { background: var(--color-primary); }
+    .cta-btn {
+      background: var(--color-accent);
+      color: var(--color-primary);
+      font-family: var(--font-headline);
+      font-size: 30px;
+      font-weight: 700;
+      padding: 26px 60px;
+      border-radius: 60px;
+      margin-top: 36px;
+      border: none;
+      cursor: default;
+    }
+
+    /* ── Responsive preview ────────────────────────────────────────────── */
+    @media (max-width: 1100px) {
+      #composition { width: 360px; height: 640px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="composition" data-aspect-ratio="9:16">
+
+  <!-- ── scene_01: big_claim ─────────────────────────────────────────── -->
+  <section id="scene_01" class="scene" data-duration="5" data-transition="fast_scale_in">
+    <div class="section-label">{{label_01}}</div>
+    <div class="big-stat">{{big_stat_value}}</div>
+    <div class="big-stat-label">{{big_stat_label}}</div>
+    <p class="subhead" style="margin-top:28px;">{{claim_subhead}}</p>
+    <div class="subtitle">{{caption_01}}</div>
+  </section>
+
+  <!-- ── scene_02: context ───────────────────────────────────────────── -->
+  <section id="scene_02" class="scene" data-duration="7" data-transition="slide_up">
+    <div class="section-label">{{label_02}}</div>
+    <h2 class="headline">{{context_headline}}</h2>
+    <p class="subhead">{{context_subhead}}</p>
+    <div class="mech-card">
+      <div class="mech-title">{{context_card_title}}</div>
+      <div class="mech-body">{{context_card_body}}</div>
+    </div>
+    <div class="subtitle">{{caption_02}}</div>
+  </section>
+
+  <!-- ── scene_03: mechanism ─────────────────────────────────────────── -->
+  <section id="scene_03" class="scene" data-duration="8" data-transition="slide_up">
+    <div class="section-label">{{label_03}}</div>
+    <h2 class="headline">{{mechanism_headline}}</h2>
+    <!-- Flow diagram: 3 nodes with arrows -->
+    <div class="flow-row">
+      <div class="flow-node">
+        <div class="node-icon">&#9632;</div>
+        <div class="node-label">{{node1_label}}</div>
+        <div class="node-sub">{{node1_sub}}</div>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-node">
+        <div class="node-icon">&#9650;</div>
+        <div class="node-label">{{node2_label}}</div>
+        <div class="node-sub">{{node2_sub}}</div>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-node">
+        <div class="node-icon">&#9679;</div>
+        <div class="node-label">{{node3_label}}</div>
+        <div class="node-sub">{{node3_sub}}</div>
+      </div>
+    </div>
+    <div class="subtitle">{{caption_03}}</div>
+  </section>
+
+  <!-- ── scene_04: use_case ──────────────────────────────────────────── -->
+  <section id="scene_04" class="scene" data-duration="8" data-transition="slide_up">
+    <div class="section-label">{{label_04}}</div>
+    <h2 class="headline">{{usecase_headline}}</h2>
+    <div class="step-list">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">{{step1_title}}</div>
+          <div class="step-desc">{{step1_desc}}</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">{{step2_title}}</div>
+          <div class="step-desc">{{step2_desc}}</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">{{step3_title}}</div>
+          <div class="step-desc">{{step3_desc}}</div>
+        </div>
+      </div>
+    </div>
+    <div class="subtitle">{{caption_04}}</div>
+  </section>
+
+  <!-- ── scene_05: cta ───────────────────────────────────────────────── -->
+  <section id="scene_05" class="scene" data-duration="5" data-transition="slide_up">
+    <div class="section-label">{{label_05}}</div>
+    <h2 class="headline">{{cta_headline}}</h2>
+    <p class="subhead">{{cta_subhead}}</p>
+    <button class="cta-btn">{{cta_button}}</button>
+    <div class="subtitle">{{caption_05}}</div>
+  </section>
+
+</div><!-- /#composition -->
+
+<script>
+  // ── HyperFrames GSAP Timeline ──────────────────────────────────────────
+  window.__timelines = window.__timelines || [];
+
+  const tl = gsap.timeline({ paused: true });
+
+  // ── Scene offsets ──────────────────────────────────────────────────
+  // scene_01: 0s (5s)  scene_02: 5s (7s)  scene_03: 12s (8s)
+  // scene_04: 20s (8s)  scene_05: 28s (5s)   total: 33s
+  const S = { s1: 0, s2: 5, s3: 12, s4: 20, s5: 28 };
+
+  // ── scene_01: big_claim ─────────────────────────────────────────────
+  tl.set('#scene_01', { opacity: 1 }, S.s1)
+    .from('#scene_01 .section-label', { opacity: 0, x: -30, duration: 0.2, ease: 'power2.out' }, S.s1)
+    .from('#scene_01 .big-stat', { scale: 0.6, opacity: 0, duration: 0.3, ease: 'power4.out' }, S.s1 + 0.15)
+    .from('#scene_01 .big-stat-label', { opacity: 0, y: 20, duration: 0.2, ease: 'power2.out' }, S.s1 + 0.4)
+    .from('#scene_01 .subhead', { opacity: 0, y: 20, duration: 0.2, ease: 'power2.out' }, S.s1 + 0.55)
+    .from('#scene_01 .subtitle', { opacity: 0, duration: 0.2 }, S.s1 + 0.1)
+    .to('#scene_01 .subtitle', { opacity: 0, duration: 0.2 }, S.s2 - 0.3)
+    .to('#scene_01', { opacity: 0, duration: 0.25 }, S.s2 - 0.25);
+
+  // ── scene_02: context ───────────────────────────────────────────────
+  tl.set('#scene_02', { opacity: 1 }, S.s2)
+    .from('#scene_02 .section-label', { opacity: 0, x: -20, duration: 0.2, ease: 'power2.out' }, S.s2)
+    .from('#scene_02 .headline', { opacity: 0, y: 40, duration: 0.25, ease: 'power3.out' }, S.s2 + 0.15)
+    .from('#scene_02 .subhead', { opacity: 0, y: 20, duration: 0.2, ease: 'power2.out' }, S.s2 + 0.3)
+    .from('#scene_02 .mech-card', { opacity: 0, x: 40, duration: 0.3, ease: 'power2.out' }, S.s2 + 0.45)
+    .from('#scene_02 .subtitle', { opacity: 0, duration: 0.2 }, S.s2 + 0.1)
+    .to('#scene_02 .subtitle', { opacity: 0, duration: 0.2 }, S.s3 - 0.3)
+    .to('#scene_02', { opacity: 0, duration: 0.25 }, S.s3 - 0.25);
+
+  // ── scene_03: mechanism — flow nodes stagger ─────────────────────────
+  tl.set('#scene_03', { opacity: 1 }, S.s3)
+    .from('#scene_03 .section-label', { opacity: 0, x: -20, duration: 0.2, ease: 'power2.out' }, S.s3)
+    .from('#scene_03 .headline', { opacity: 0, y: 40, duration: 0.25, ease: 'power3.out' }, S.s3 + 0.15)
+    .from('#scene_03 .flow-node', { opacity: 0, y: 30, duration: 0.25, ease: 'power2.out', stagger: 0.12 }, S.s3 + 0.4)
+    .from('#scene_03 .flow-arrow', { opacity: 0, duration: 0.15, stagger: 0.12 }, S.s3 + 0.55)
+    .from('#scene_03 .subtitle', { opacity: 0, duration: 0.2 }, S.s3 + 0.1)
+    .to('#scene_03 .subtitle', { opacity: 0, duration: 0.2 }, S.s4 - 0.3)
+    .to('#scene_03', { opacity: 0, duration: 0.25 }, S.s4 - 0.25);
+
+  // ── scene_04: use_case — step items stagger ──────────────────────────
+  tl.set('#scene_04', { opacity: 1 }, S.s4)
+    .from('#scene_04 .section-label', { opacity: 0, x: -20, duration: 0.2, ease: 'power2.out' }, S.s4)
+    .from('#scene_04 .headline', { opacity: 0, y: 40, duration: 0.25, ease: 'power3.out' }, S.s4 + 0.15)
+    .from('#scene_04 .step-item', { opacity: 0, x: 40, duration: 0.25, ease: 'power2.out', stagger: 0.15 }, S.s4 + 0.4)
+    .from('#scene_04 .subtitle', { opacity: 0, duration: 0.2 }, S.s4 + 0.1)
+    .to('#scene_04 .subtitle', { opacity: 0, duration: 0.2 }, S.s5 - 0.3)
+    .to('#scene_04', { opacity: 0, duration: 0.25 }, S.s5 - 0.25);
+
+  // ── scene_05: cta ───────────────────────────────────────────────────
+  tl.set('#scene_05', { opacity: 1 }, S.s5)
+    .from('#scene_05 .section-label', { opacity: 0, x: -20, duration: 0.2, ease: 'power2.out' }, S.s5)
+    .from('#scene_05 .headline', { scale: 0.9, opacity: 0, duration: 0.25, ease: 'power4.out' }, S.s5 + 0.15)
+    .from('#scene_05 .subhead', { opacity: 0, y: 20, duration: 0.2, ease: 'power2.out' }, S.s5 + 0.35)
+    .from('#scene_05 .cta-btn', { y: 20, opacity: 0, duration: 0.2, ease: 'power3.out' }, S.s5 + 0.5)
+    .from('#scene_05 .subtitle', { opacity: 0, duration: 0.2 }, S.s5 + 0.1)
+    .to('#scene_05', { opacity: 0, duration: 0.4, ease: 'none' }, S.s5 + 4.6);
+
+  // ── Register ──────────────────────────────────────────────────────────
+  window.__timelines.push(tl);
+
+  if (window.location.protocol === 'file:') {
+    const btn = document.createElement('button');
+    btn.textContent = '▶ Play Preview';
+    Object.assign(btn.style, {
+      position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
+      padding: '12px 32px', background: '#38BDF8', color: '#0F172A',
+      border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: '700',
+      cursor: 'pointer', zIndex: '9999'
+    });
+    btn.onclick = () => { tl.restart(); };
+    document.body.appendChild(btn);
+  }
+</script>
+</body>
+</html>

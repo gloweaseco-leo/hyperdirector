@@ -3,7 +3,37 @@
 > Hermes video director enhancement pack — powered by HyperFrames.  
 > 中文文档 → [README.zh-CN.md](./README.zh-CN.md) · Skill Pack 详解 → [hyperdirector/README.zh-CN.md](./hyperdirector/README.zh-CN.md)
 
-**License:** [Apache License 2.0](./LICENSE) · **Contributing:** [CONTRIBUTING.md](./CONTRIBUTING.md) · **Security:** [SECURITY.md](./SECURITY.md) · **Releases:** [RELEASE_NOTES_v0.1.md](./RELEASE_NOTES_v0.1.md)
+**License:** [Apache License 2.0](./LICENSE) · **Contributing:** [CONTRIBUTING.md](./CONTRIBUTING.md) · **Security:** [SECURITY.md](./SECURITY.md) · **Releases:** [v0.1.0](./RELEASE_NOTES_v0.1.md) · [v0.1.1](./RELEASE_NOTES_v0.1.1.md)
+
+---
+
+## One-command install (Skill Pack only)
+
+Installs **`hyperdirector/`** into the default Hermes skills path (`~/.hermes/skills/hyperdirector` on Unix, `%USERPROFILE%\.hermes\skills\hyperdirector` on Windows). Override the destination with **`HERMES_SKILLS_DIR`**.
+
+**Security:** Users may inspect [`install.sh`](./install.sh) and [`install.ps1`](./install.ps1) before running the one-command installer.
+
+**macOS / Linux / WSL:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/gloweaseco-leo/hyperdirector/main/install.sh | bash
+```
+
+**Windows PowerShell:**
+
+```powershell
+irm https://raw.githubusercontent.com/gloweaseco-leo/hyperdirector/main/install.ps1 | iex
+```
+
+**Scope:** This installs the **HyperDirector Skill Pack only**. Real rendering still depends on your local Hermes setup, **HyperFrames CLI**, **Node.js** (≥22), **FFmpeg**, and a browser environment supported by HyperFrames. HyperDirector is a director layer **on top of** HyperFrames — not a replacement for it.
+
+After install, verify tooling:
+
+```bash
+node ~/.hermes/skills/hyperdirector/scripts/check-hyperframes-env.js
+```
+
+(On Windows, use `%USERPROFILE%\.hermes\skills\hyperdirector\scripts\check-hyperframes-env.js`.)
 
 ---
 

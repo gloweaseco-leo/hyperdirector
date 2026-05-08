@@ -19,17 +19,48 @@ HyperDirector/               ← 建议作为 GitHub 公开仓库根目录
 ├── NOTICE
 ├── CONTRIBUTING.md
 ├── SECURITY.md
-├── RELEASE_NOTES_v0.1.md
+├── RELEASE_NOTES_v0.1.md / v0.1.1.md
+├── install.sh / install.ps1  ← 一键安装 Skill Pack
 ├── README.md
 ├── README.zh-CN.md          ← 本文件
 ├── hyperdirector/           ← Hermes Skill Pack（复制到 Hermes skills 目录）
 │   ├── SKILL.md
 │   ├── prompts/、rules/、schemas/、templates/、workflows/、docs/、qa/、examples/ …
-│   └── scripts/             ← check-env、校验脚本、leak-scan（发布前扫描）
+│   └── scripts/             ← check-env、check-hyperframes-env、校验脚本、leak-scan
 └── output/                  ← 本地生成物（默认不提交）
 ```
 
 商业增强内容（高阶模板、客户交付、真实案例等）应放在**独立私有仓库**；请勿将商业增强目录或内部 PRD 推送到公开远程。
+
+---
+
+## 一条命令安装（仅 Skill Pack）
+
+从官方公开仓库拉取并**仅安装** `hyperdirector/` 到默认 Hermes skills 目录；可用环境变量 **`HERMES_SKILLS_DIR`** 覆盖安装路径。
+
+**安全提示：** 若担心远程脚本，可先浏览器打开或下载查看 [`install.sh`](./install.sh)、[`install.ps1`](./install.ps1) 内容，再本地执行。
+
+**Windows PowerShell：**
+
+```powershell
+irm https://raw.githubusercontent.com/gloweaseco-leo/hyperdirector/main/install.ps1 | iex
+```
+
+**macOS / Linux / WSL：**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/gloweaseco-leo/hyperdirector/main/install.sh | bash
+```
+
+**说明：** 这只是一键安装 **HyperDirector Skill Pack**，**不是**一键安装完整视频渲染环境。真实渲染仍依赖 Hermes、**HyperFrames CLI**、Node.js（≥22）、FFmpeg 与 HyperFrames 所需的浏览器环境。HyperDirector 是在 HyperFrames 之上的导演工作流层，**不能替代** HyperFrames。
+
+安装后检查本机工具链：
+
+```bash
+node ~/.hermes/skills/hyperdirector/scripts/check-hyperframes-env.js
+```
+
+（Windows 请将路径换为 `%USERPROFILE%\.hermes\skills\hyperdirector\scripts\check-hyperframes-env.js`。）
 
 ---
 

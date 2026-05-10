@@ -20,3 +20,11 @@ If an asset file is missing, the template falls back to:
 - Point icons → numbered circles (default behavior)
 
 Add `data-placeholder="true"` to any asset `<img>` that hasn't been provided yet.
+
+## GSAP (optional offline copy)
+
+For production or air-gapped render, you may place **GSAP 3.12.x** as `output/assets/gsap.min.js` and point the `<script src>` in `index.html` to it (R-CORE-12). Do not commit `gsap.min.js` into the HyperDirector repo unless policy allows.
+
+## Fonts
+
+Licensed font files may live under `output/assets/` and load via `@font-face`. Do not rely on Google Fonts as the only source for headless pipelines.

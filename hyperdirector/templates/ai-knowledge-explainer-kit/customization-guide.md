@@ -22,10 +22,11 @@ Change background to light and update text colors:
 
 ## Changing Flow Diagram Icons
 
-Replace Unicode shapes with domain-specific text or emoji (for preview only — use text nodes, not `<img>`, to avoid asset dependency):
+Replace Unicode shapes with **short text labels** or **inline SVG** / `assets/*.svg`. Avoid **emoji** in core frames — headless render often shows tofu (R-HRS-02).
+
 ```html
 <!-- Instead of &#9632; &#9650; &#9679; use: -->
-<div class="node-icon">RAG</div>   <!-- text label -->
+<div class="node-icon">RAG</div>
 <div class="node-icon">LLM</div>
 <div class="node-icon">Agent</div>
 ```

@@ -99,23 +99,23 @@ node hyperdirector/scripts/check-env.js
 - render 后视频字体与设计稿不符
 - FFmpeg / Puppeteer 报 `font not found` 或 `cannot load font`
 
-**原因：** brand-kit 中声明的字体（如 `Noto Sans SC`、`PingFang SC`）未安装在系统中，或 Google Fonts 未能在渲染环境加载。
+**原因：** brand-kit 声明的字体在 **无头 Chromium / WSL / Linux** 中不存在；或仍依赖 `fonts.googleapis.com` / `fonts.gstatic.com`，在离线或受限网络下无法加载。
 
-**修复步骤：**
+**修复步骤（生产渲染优先顺序）：**
 
 ```bash
-# 方案一：系统安装字体（推荐用于 render）
-# Windows：下载 .ttf 文件，双击安装
-# macOS：双击 .ttf / .otf，点击"安装字体"
+# 方案一：在 :root 使用系统字体栈 + 明确 CJK fallback（不依赖外网）
+# 例：'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif
+# 见 rules/headless-rendering-stability.md（R-HRS-01）
+
+# 方案二：将授权字体放入 output/assets/，用 @font-face + url('assets/...') 引用
+# 勿将字体二进制提交进本仓库，除非许可与策略明确允许
+
+# 方案三：在渲染机系统层安装字体（Windows/macOS/Linux 字体安装流程）
 # Linux：cp font.ttf ~/.local/share/fonts/ && fc-cache -fv
-
-# 方案二：在 index.html 中使用 Google Fonts CDN（仅 preview）
-# <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC&display=swap" rel="stylesheet">
-
-# 方案三：修改 brand-kit 使用系统自带字体
-# headline: "Arial" 或 "Microsoft YaHei"（Windows）
-# body: "Helvetica" 或 "Microsoft YaHei"（Windows）
 ```
+
+**不推荐：** 把 Google Fonts 作为 **唯一** 字形来源 — preview 可能正常，headless render 易失败或与设计不一致。
 
 **验证：**
 
@@ -170,25 +170,23 @@ npx hyperframes render --input output/index.html --output output/final.mp4 --ver
 
 **症状：** `output/preview.html` 在浏览器中完全正常，但 `npx hyperframes render` 输出的 `final.mp4` 为空、黑屏或崩溃。
 
-**原因：** preview 使用浏览器原生渲染，render 使用 Puppeteer + FFmpeg 无头截帧，两者环境差异导致不一致。
+**原因：** preview 与 render 的网络、缓存、字体、视口与 Chromium 配置不同；外网依赖（远程字体、CDN JS）常在无头环境暴露问题。
 
 **诊断步骤：**
 
-1. **检查 asset 路径是否使用绝对路径**（无头环境下相对路径可能失效）：
+1. **相对资源路径**：确认 `src` / `url()` 均相对 `output/`，且文件真实存在（参见 §6）。若 HyperFrames 文档对路径有特殊要求，以其为准。
 
-   ```html
-   <!-- 错误：相对路径在无头环境中可能失败 -->
-   <img src="assets/hero.png">
-   
-   <!-- 正确：使用 file:// 绝对路径或通过 HyperFrames asset loader -->
-   <img src="file:///absolute/path/to/assets/hero.png">
-   ```
+2. **外网依赖**：对生产成片路径，避免依赖 `fonts.googleapis.com`；GSAP 若无法访问 cdnjs，可改为 `assets/gsap.min.js`（用户自备文件，R-CORE-12）。参见 `rules/headless-rendering-stability.md`。
 
-2. **检查是否有 CORS 阻塞**：无头浏览器更严格，Google Fonts 等外部资源可能被阻止。改为本地字体或内联 CSS。
+3. **缓存**：清理本机浏览器缓存、Chromium 用户数据目录（若你自行管理），或换无痕/干净 profile 复现；对比「首次冷加载」与「二次渲染」行为。
 
-3. **检查动画是否依赖 `window.requestAnimationFrame` 时序**：无头截帧时序与真实浏览器不同，需确保 `data-duration` 驱动动画，而非依赖 rAF 帧率。
+4. **动画与时序**：确保由 GSAP timeline + `data-duration` 驱动，避免 `setTimeout` / 无限 `repeat`（见 `rules/gsap-deterministic-rules.md`）。
 
-4. **降低复杂度测试**：将场景数减为 1，验证单场景 render 是否成功，再逐步恢复。
+5. **启发式扫描（非 lint）**：`node hyperdirector/scripts/check-composition-hazards.js output/<项目>/index.html` — 仅 WARNING，不阻断。
+
+6. **降低复杂度**：单场景最小 HTML 试渲染，再逐步恢复内容。
+
+**关于 `examples/**/output/`：** 其中 HTML 可能含历史写法（如远程字体），**不代表**生产推荐路径；以当前 `templates/*/template.html` 与上述规则为准。完整说明见 `docs/rendering-stability.zh-CN.md`。
 
 ---
 

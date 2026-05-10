@@ -123,9 +123,12 @@ All asset references (`src`, `href`, `url()`) must use relative paths rooted at 
 <img src="https://example.com/logo.png">
 ```
 
-**Exception:** GSAP CDN URL (`https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js`) is the only permitted external URL.
+**Exceptions (external `http(s)` allowed only for these):**
 
-**Checkable condition:** No `src` or CSS `url()` containing `http://`, `https://`, or absolute OS paths — except for the GSAP CDN entry.
+1. GSAP 3.12.x from the approved CDN URL (see R-CORE-12), **or**
+2. No other script/image/font URLs — fonts must not rely on remote CDNs for production render stability (see `rules/headless-rendering-stability.md`).
+
+**Checkable condition:** No `src` or CSS `url()` containing `http://`, `https://`, or absolute OS paths — except the GSAP CDN entry per R-CORE-12. No `fonts.googleapis.com` / `fonts.gstatic.com` for offline-required projects.
 
 ---
 
@@ -186,16 +189,27 @@ Minification is only permitted for `preview.html` (and even there, not required)
 
 ---
 
-## R-CORE-12 · GSAP Must Be Loaded from the Approved CDN  `BLOCKING`
+## R-CORE-12 · GSAP 3.12.x from CDN **or** `assets/gsap.min.js`  `BLOCKING`
+
+Exactly **one** GSAP load. Choose one:
+
+**Option A — default (clone-friendly preview):**
 
 ```html
-<!-- Required — exact URL -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 ```
 
-- Version must be `3.12.x` (patch version may vary, minor must be `12`)
-- No local GSAP copy, no npm bundle, no import map redirect
-- No other animation libraries unless explicitly listed in template's approved dependency list
+**Option B — offline / headless-stable (user-supplied file, not shipped in this repo):**
+
+```html
+<script src="assets/gsap.min.js"></script>
+```
+
+- Patch version may differ; minor must stay **12** (e.g. `3.12.5`, `3.12.7`).
+- Do not add npm/import-map GSAP, a second duplicate script tag, or other animation libraries unless a template explicitly allows them.
+- Obtain `gsap.min.js` from the official GSAP distribution; place it under `output/assets/` in real projects. Do not commit the binary into HyperDirector unless the repository policy explicitly allows it.
+
+See also: `rules/headless-rendering-stability.md` (R-HRS-04).
 
 ---
 
@@ -212,7 +226,7 @@ Run this checklist before issuing `npx hyperframes render`:
 [ ] All scene IDs are sequential scene_01...scene_NN
 [ ] All asset paths are relative and files exist
 [ ] window.__timelines registered (see gsap-deterministic-rules.md)
-[ ] GSAP 3.12.x CDN script present in <head>
+[ ] GSAP 3.12.x loaded once (CDN or assets/gsap.min.js) per R-CORE-12
 [ ] output/DESIGN.md exists
 [ ] output/storyboard.json exists and is valid JSON
 ```

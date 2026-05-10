@@ -41,6 +41,12 @@ Check everything at once:
 node scripts/check-env.js
 ```
 
+Optional — heuristic stability hints (warnings only; not `hyperframes lint`):
+
+```bash
+node scripts/check-composition-hazards.js ../path/to/output/index.html
+```
+
 ---
 
 ## Installation
@@ -135,6 +141,7 @@ hyperdirector/
 ├── rules/                    Executable QA rules
 │   ├── hyperframes-core-rules.md
 │   ├── gsap-deterministic-rules.md
+│   ├── headless-rendering-stability.md
 │   ├── subtitle-safe-area.md
 │   ├── performance-checklist.md
 │   ├── common-errors-fix.md

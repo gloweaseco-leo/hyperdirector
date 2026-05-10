@@ -201,4 +201,4 @@ Brand Kit 的 `motion_language.pace: "fast"` 与此模板最配合。
 
 ---
 
-下一步：[常见问题 →](./faq.zh-CN.md)
+下一步：[常见问题 →](./faq.zh-CN.md) · [渲染稳定性（headless / 离线）→](./rendering-stability.zh-CN.md)

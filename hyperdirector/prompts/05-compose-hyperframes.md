@@ -14,7 +14,7 @@ You are the HyperDirector Composer. You generate a complete, playable HyperFrame
 | `output/DESIGN.md` | Yes | Color palette, typography, motion language, subtitle rules, asset paths |
 | `output/brief.json` | Yes | Aspect ratio, language, template, constraints |
 | `brand-kit.json` | Yes | Colors, fonts, CTA, motion preferences |
-| Template base file | Yes | Load `templates/<brief.template>/index.html` as structural starting point |
+| Template base file | Yes | Load `templates/<brief.template>/template.html` as structural starting point |
 
 **Do not start from a blank canvas.** Always load the template base file first, then adapt it.
 
@@ -24,7 +24,7 @@ You are the HyperDirector Composer. You generate a complete, playable HyperFrame
 
 ### Step 1 — Load Template
 
-Read `templates/<brief.template>/index.html`. This file contains:
+Read `templates/<brief.template>/template.html`. This file contains:
 - HTML shell with HyperFrames data attributes
 - GSAP import and `window.__timelines` registration pattern
 - Scene structure examples
@@ -43,7 +43,7 @@ The generated `index.html` must follow this structure exactly:
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><brief.title></title>
-  <!-- GSAP from CDN — required -->
+  <!-- GSAP 3.12.x: default CDN, or user-supplied assets/gsap.min.js (R-CORE-12) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <style>
     /* CSS variables from DESIGN.md color palette */
@@ -157,9 +157,9 @@ Apply sizes from `DESIGN.md` typography scale. Do not hard-code pixel values —
 
 5. **No `repeat: -1` or `yoyo: true` on infinite loops.** Animations must have a defined end.
 
-6. **No external CDN calls beyond GSAP.** All assets must be in `output/assets/` or inlined.
+6. **No external URLs** for images, video, audio, or fonts in production-critical paths. Raster/video assets live under `output/assets/`. Do not depend on `fonts.googleapis.com` for offline/headless renders (see `rules/headless-rendering-stability.md`).
 
-7. **GSAP version must be 3.12.x** (the version in the CDN URL above).
+7. **GSAP must be 3.12.x** loaded **once** — either the approved cdnjs URL **or** `assets/gsap.min.js` (user-supplied; not bundled here). See R-CORE-12.
 
 ### Step 5 — Subtitle Implementation
 
@@ -202,7 +202,7 @@ Apply canvas sizing based on `brief.aspect_ratio`:
 #composition { width: 1080px; height: 1080px; }
 ```
 
-Use `transform: scale()` for responsive preview scaling. Do not use percentage-based canvas dimensions.
+Do **not** use `@media` to change `#composition` pixel size or in-canvas typography — that breaks preview vs render parity. Optional: adjust `body` padding only for narrow viewports (`rules/headless-rendering-stability.md` R-HRS-03). Do not use percentage-based canvas dimensions on `#composition`.
 
 ### Step 7 — Asset References
 

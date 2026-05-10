@@ -108,7 +108,7 @@ npx hyperframes render --input index.html --output final.mp4 --quality high
 
 - `final.mp4` 未包含，需本地渲染
 - 使用 Emoji 作为用户类型图标，部分渲染环境可能不一致（替换为 SVG 更稳定）
-- 字体依赖 Google Fonts CDN（离线时需本地化）
+- 示例 `output/` 可能含历史产物（如远程字体链接），**不代表**生产渲染推荐路径；生产请见 `docs/rendering-stability.zh-CN.md`
 
 ---
 

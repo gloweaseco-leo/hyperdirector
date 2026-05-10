@@ -142,6 +142,7 @@ node hyperdirector/scripts/validate-brand-kit.js <path>    # validate brand-kit.
 node hyperdirector/scripts/validate-brief.js <path>        # validate brief.json
 node hyperdirector/scripts/validate-storyboard.js <path>   # validate storyboard.json
 node hyperdirector/scripts/check-output-contract.js <dir>  # check output directory
+node hyperdirector/scripts/check-composition-hazards.js <file.html>  # optional heuristic warnings (not lint)
 ```
 
 ---

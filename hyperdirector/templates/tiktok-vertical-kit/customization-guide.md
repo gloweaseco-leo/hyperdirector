@@ -29,16 +29,11 @@ In `template.html`, find the `:root` block and replace default values:
 }
 ```
 
-### Step 2 — Add Google Fonts Import
+### Step 2 — Fonts (production / headless)
 
-Add to `<head>` before the existing `<style>` tag:
+Prefer **system + CJK fallbacks** in `--font-headline` / `--font-body` so render does not depend on the public internet. Optional: licensed files in `output/assets/` + `@font-face` with `url('assets/...')`.
 
-```html
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=YOUR_FONT:wght@400;600;700;800&display=swap" rel="stylesheet">
-```
-
-For Chinese: use `Noto+Sans+SC:wght@400;700` (already a safe default).
+Do **not** treat Google Fonts as mandatory for final render — see `rules/headless-rendering-stability.md`.
 
 ### Step 3 — Add Logo to CTA Scene
 

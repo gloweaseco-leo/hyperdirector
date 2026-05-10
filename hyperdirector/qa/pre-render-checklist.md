@@ -87,6 +87,26 @@
 
 ---
 
+## 8. 渲染稳定性（Headless / 离线 / 预览一致）
+
+| 检查项 | 说明 |
+|--------|------|
+| ✅ GSAP 仅加载一次 | CDN **或** `assets/gsap.min.js`（3.12.x），见 R-CORE-12 |
+| ✅ 生产路径不依赖远程字体 | 避免唯一依赖 `fonts.googleapis.com`；见 R-HRS-01 |
+| ✅ `#composition` 尺寸固定 | 无 `@media` 改变画布 px 或画布内主字号；见 R-HRS-03 |
+| ✅ 核心画面避免 emoji | 图标优先 SVG / 本地资产；见 R-HRS-02 |
+| ✅ 字幕/标题动效 | 避免 CSS `translate` 居中与 GSAP `scale` 互抢；见 R-GSAP-09 |
+
+**可选辅助（非 HyperFrames lint，不阻断）：**
+
+```bash
+node hyperdirector/scripts/check-composition-hazards.js output/index.html
+```
+
+详见 `rules/headless-rendering-stability.md`、`docs/rendering-stability.zh-CN.md`。
+
+---
+
 ## 快速全检命令
 
 ```bash
@@ -104,6 +124,9 @@ node hyperdirector/scripts/validate-brand-kit.js hyperdirector/brand/brand-kit.e
 
 # 5. 输出合约检查
 node hyperdirector/scripts/check-output-contract.js output/
+
+# 6. （可选）启发式稳定性扫描 — 非 lint，不阻断
+node hyperdirector/scripts/check-composition-hazards.js output/index.html
 ```
 
 全部通过后执行：

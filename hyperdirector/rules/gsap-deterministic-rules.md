@@ -209,7 +209,22 @@ tl.to('.el', { x: 100, duration: 1 }); // time controlled by GSAP
 
 ---
 
-## R-GSAP-09 · Media Elements Must Be Muted and Controlled by GSAP  `WARNING`
+## R-GSAP-09 · CSS `transform` Used for Layout vs GSAP `scale` / `x` / `y`  `WARNING`
+
+Many templates centre subtitles with CSS such as `left: 50%` plus `transform: translateX(-50%)`. GSAP tweens that set `scale`, `x`, `y`, or a full `transform` string on the **same element** can replace the CSS transform matrix and break horizontal centring or baseline alignment.
+
+**Prefer for captions, primary headlines, and CTA copy:**
+- `opacity`, `y` (small pixel shifts), `filter` (e.g. blur), or `clipPath` patterns that do not fight the CSS centre transform.
+
+**If `scale` entrance is required on decorative elements only:** target a **wrapper** that does not use CSS `translate` centring, or animate children that are not positioned with `transform`.
+
+**Fallback:** If a complex tween causes visible misalignment, reduce to opacity/y-only on that layer rather than rewriting the whole timeline.
+
+**See also:** `rules/headless-rendering-stability.md` (R-HRS-05).
+
+---
+
+## R-GSAP-10 · Media Elements Must Be Muted and Controlled by GSAP  `WARNING`
 
 If `<video>` or `<audio>` elements are used in the composition:
 - They must have the `muted` attribute (prevents autoplay block in headless browser)
@@ -228,7 +243,7 @@ If `<video>` or `<audio>` elements are used in the composition:
 
 ---
 
-## R-GSAP-10 · All Animations Must Be Reproducible  `BLOCKING` (summary rule)
+## R-GSAP-11 · All Animations Must Be Reproducible  `BLOCKING` (summary rule)
 
 Same `index.html` + same HyperFrames version = identical frame output every time. This is the master constraint that all preceding rules exist to enforce.
 
@@ -244,6 +259,7 @@ Same `index.html` + same HyperFrames version = identical frame output every time
 [ ] No external API calls or dynamic data fetches
 [ ] No CSS animations with random() or env()
 [ ] GSAP version pinned to 3.12.x
+[ ] Readable layers avoid GSAP `scale` fighting CSS `translate` centring (R-GSAP-09)
 ```
 
 ---
@@ -261,5 +277,6 @@ To check for the most common GSAP violations in a generated file, search for the
 | `Date.now()` | R-GSAP-08 |
 | `performance.now()` | R-GSAP-08 |
 | `gsap.timeline()` (without `paused`) | R-GSAP-01 |
-| `autoplay` on `<video>` | R-GSAP-09 |
-| `loop` on `<video>` | R-GSAP-09 |
+| `autoplay` on `<video>` | R-GSAP-10 |
+| `loop` on `<video>` | R-GSAP-10 |
+| `scale` tween on subtitle/title with CSS `translate` centre | R-GSAP-09 |

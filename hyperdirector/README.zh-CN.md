@@ -190,6 +190,18 @@ output/my-project/
 
 ---
 
+## 辅助脚本（非 lint）
+
+启发式检查 composition 风险（远程字体、emoji、`@media` 等），**仅输出 WARNING，始终成功退出**，不能替代 `npx hyperframes lint`：
+
+```bash
+node hyperdirector/scripts/check-composition-hazards.js output/<项目>/index.html
+```
+
+说明见 `qa/pre-render-checklist.md` 与 `docs/rendering-stability.zh-CN.md`。
+
+---
+
 ## 版本计划
 
 | 版本 | 内容 |

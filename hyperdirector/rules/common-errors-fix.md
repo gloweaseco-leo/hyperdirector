@@ -150,7 +150,8 @@ Mark render status as `partial` in `render-report.json`.
 | Infinite loop | Search for `repeat: -1` | Change to finite repeat — see ERR-08 |
 | Canvas dimensions in % not px | `#composition { width: 100% }` | Change to explicit pixels — see R-CORE-02 |
 | Missing `window.__timelines` | `window.__timelines` is undefined in headless | Add registration — see ERR-01 |
-| GSAP version mismatch | CDN URL uses version other than 3.12.x | Update CDN URL to exact version |
+| GSAP version mismatch | Script URL is not 3.12.x | Use approved cdnjs 3.12.x or `assets/gsap.min.js` (R-CORE-12) |
+| GSAP failed to load (network) | Headless cannot reach cdnjs | Switch `<script src>` to `assets/gsap.min.js` and add the file under `output/assets/` |
 
 **Diagnostic command:**
 ```
@@ -162,34 +163,23 @@ Read the verbose output for the specific failure reason.
 
 ## ERR-07 · Font Not Rendering / Font Missing
 
-**Symptom:** Text appears in a system fallback font (Times New Roman, Arial) instead of the specified brand font. Headline weight and sizing look wrong.
+**Symptom:** Text appears in a system fallback font (Times New Roman, Arial) instead of the specified brand font. Headline weight and sizing look wrong. CJK may show tofu in Linux/WSL headless.
 
-**Diagnosis:** The specified font is not available in the headless Chromium render environment. Fonts must be either:
-1. System fonts (available on all platforms): `Arial`, `Helvetica`, `Times New Roman`, `Courier New`
-2. Loaded from Google Fonts CDN within `<head>`
-3. Embedded as base64 in a `@font-face` rule
+**Diagnosis:** The font is not available in the **render** environment. Remote font CSS (`fonts.googleapis.com`) often fails or differs offline vs preview.
 
-**Fix — Option A: Add Google Fonts import in `<head>`:**
-```html
-<head>
-  <!-- Add before other styles -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
-</head>
-```
-
-**Fix — Option B: Add system fallback to font stack:**
+**Fix — Option A (recommended for production render):** Use a **system / CJK stack** in `:root` — no network dependency:
 ```css
 :root {
-  --font-headline: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  --font-body: 'Noto Sans SC', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+  --font-headline: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+  --font-body: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
 }
 ```
 
-**Fix — Option C: Verify font name is exact:**
-Google Fonts names are case-sensitive. `'Noto Sans SC'` ≠ `'Noto sans SC'`.
+**Fix — Option B:** Add **licensed** font files under `output/assets/` and `@font-face` with `url('assets/your-font.woff2')` (do not commit fonts into HyperDirector unless repo policy allows).
 
-**Verification:** Open `preview.html` in Chrome. DevTools → Elements → Computed → `font-family` should show the intended font, not a system fallback.
+**Fix — Option C:** For desktop preview only, remote font links may work — but **do not** rely on them for headless/CI. Align preview with render per `rules/headless-rendering-stability.md`.
+
+**Verification:** Run render target environment (or WSL) and confirm glyphs; check Computed `font-family` in Chromium.
 
 **Lint error code:** `FONT_NOT_AVAILABLE`
 

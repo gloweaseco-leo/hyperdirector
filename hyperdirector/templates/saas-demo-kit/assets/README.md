@@ -10,3 +10,7 @@
 | `icon-feature3.svg` | Replace feature number 03 | No | SVG | 48×48px |
 
 Placeholder fallback: screenshot frame shows placeholder UI lines if no screenshot provided.
+
+## GSAP / fonts
+
+Same as other kits: optional `output/assets/gsap.min.js` for offline GSAP (R-CORE-12); local fonts via `assets/` + `@font-face` preferred over CDN-only for render stability.

@@ -114,7 +114,7 @@ tl.set({}, {}, TOTAL_DURATION);  // extend if last animation ends earlier
 | `video.play()` / `audio.currentTime = x` | Conflicts with framework media sync |
 | `tl.to("#video-el", { width, height })` | Animating video dimensions breaks frame rendering |
 | `async`/`await` inside GSAP timeline setup | Timeline must construct synchronously |
-| External CDN script tags for GSAP | Use HyperFrames' bundled GSAP only |
+| External script tags other than GSAP | Only GSAP 3.12.x via R-CORE-12 (cdnjs **or** `assets/gsap.min.js`) |
 
 ---
 

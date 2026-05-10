@@ -3,6 +3,8 @@
 ## Minimum Brand Kit Fields
 Same as tiktok-vertical-kit. `colors.primary`, `colors.accent`, `colors.background`, `fonts.headline`, `fonts.body`.
 
+**Fonts:** Prefer system / CJK stacks or local `assets/` + `@font-face` for headless render; see `rules/headless-rendering-stability.md`.
+
 ## Switching to 9:16 (Vertical Mode)
 
 Change canvas dimensions in `:root` and `#composition`:

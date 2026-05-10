@@ -7,3 +7,11 @@
 
 This template is intentionally asset-light. All visuals are CSS-generated.
 No placeholder broken images will appear if assets are absent.
+
+## GSAP (optional offline copy)
+
+See `templates/tiktok-vertical-kit/assets/README.md` — same R-CORE-12 policy: user may add `gsap.min.js` under `output/assets/` and switch the script tag.
+
+## Fonts
+
+Optional licensed webfonts in `output/assets/` with `@font-face`; avoid remote-only font loading for headless render.

@@ -18,10 +18,16 @@ const ROOT_FILES = [
   'SECURITY.md',
   'NOTICE',
   'RELEASE_NOTES_v0.1.md',
+  'RELEASE_NOTES_v0.1.1.md',
+  'RELEASE_NOTES_v0.1.2-preview.md',
+  'install.sh',
+  'install.ps1',
+  '.gitattributes',
 ];
 
 const EXT_OK = new Set([
   '.md', '.json', '.html', '.js', '.yml', '.yaml', '.txt', '.css',
+  '.sh', '.ps1', '.gitattributes',
 ]);
 
 /** @type {{ pattern: RegExp; message: string; allow?: RegExp }[]} */
@@ -97,8 +103,10 @@ function walk(dir, out = []) {
 }
 
 function shouldScanFile(file) {
+  const base = path.basename(file);
   const ext = path.extname(file).toLowerCase();
-  if (!EXT_OK.has(ext)) return false;
+  const extOk = EXT_OK.has(ext) || base === '.gitattributes';
+  if (!extOk) return false;
   const rel = path.relative(ROOT, file).replace(/\\/g, '/');
   if (rel.includes('/output/')) return false;
   if (rel === 'hyperdirector/scripts/leak-scan.js') return false;

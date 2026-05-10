@@ -21,6 +21,7 @@ Hermes video director enhancement pack. HyperFrames is the render engine. HyperD
 - Anti-patterns → `upstream/hyperframes-anti-patterns.md`
 - Command patterns → `upstream/hyperframes-command-patterns.md`
 - Agent-native rules → `upstream/hyperframes-agent-native-rules.md`
+- Headless / offline rendering stability → `rules/headless-rendering-stability.md`
 
 ---
 
@@ -52,7 +53,7 @@ Step 4 — Visual Design  (→ DESIGN.md)
 
 Step 5 — HTML Composition  (→ index.html)
   Generate plain HTML + CSS + GSAP composition.
-  Follow all rules in rules/hyperframes-core-rules.md and rules/gsap-deterministic-rules.md.
+  Follow rules/hyperframes-core-rules.md, rules/gsap-deterministic-rules.md, rules/headless-rendering-stability.md.
   Every timed element needs class="clip", data-start, data-duration, data-track-index.
   Timeline must be paused. Key must match data-composition-id.
 

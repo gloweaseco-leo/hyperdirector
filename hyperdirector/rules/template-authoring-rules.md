@@ -75,7 +75,7 @@ Placeholder syntax: `{{field_name}}` matching field names from `storyboard.scene
 <!-- Required: subtitle element in every scene -->
 <div class="subtitle">{{caption}}</div>
 
-<!-- Required: GSAP CDN -->
+<!-- Required: GSAP 3.12.x once — CDN (default) or assets/gsap.min.js (R-CORE-12) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
 <!-- Required: paused timeline registered to window.__timelines -->
@@ -95,6 +95,10 @@ Placeholder syntax: `{{field_name}}` matching field names from `storyboard.scene
 - Default CSS variable values that work standalone without brand-kit customization
 
 **Violation:** `<img src="assets/my-company-logo.png">` hard-coded in template.html.
+
+### 5. `@media` and `#composition`
+
+`@media` rules may only adjust **outer** layout (e.g. `body` padding). They must **not** change `#composition` width, height, or in-canvas font sizes. See `rules/headless-rendering-stability.md` (R-HRS-03).
 
 ---
 
@@ -174,20 +178,20 @@ Documents how a user or agent applies their brand kit to this template. Must inc
 1. **Minimum required brand-kit fields** for this template to render correctly
 2. **Step-by-step override instructions** — which CSS variables to change, in what order
 3. **Asset slots** — which image/asset positions exist and what file format/size each slot expects
-4. **Font loading instructions** — how to add Google Fonts or local fonts
+4. **Font loading instructions** — system / CJK stacks, optional `@font-face` from `assets/` (user-supplied fonts); do **not** treat Google Fonts as required for production render (see `rules/headless-rendering-stability.md`)
 5. **Common customization patterns** — 2–3 examples of typical brand overrides
 
 ---
 
 ## TA-05 · Variants — Duration Support  `BLOCKING`
 
-Every template must provide at least two duration variants:
+Every template must provide at least two duration variants as **Markdown** specs:
 
 | Variant | File | Scene Count | Total Duration |
 |---------|------|-------------|----------------|
-| Short | `variants/15s.html` | 3–4 scenes | 15s |
-| Standard | `variants/30s.html` | 5–6 scenes | 30s |
-| Extended | `variants/60s.html` | 7–8 scenes | 60s (recommended) |
+| Short | `variants/15s.md` | 3–4 scenes | 15s |
+| Standard | `variants/30s.md` | 5–6 scenes | 30s |
+| Extended | `variants/60s.md` | 7–8 scenes | 60s (recommended) |
 
 **Variant rules:**
 - All variants must pass the same structural rules as `template.html`
@@ -262,8 +266,8 @@ Before publishing a new template to `templates/`:
 [ ] templates/<slug>/DESIGN.md exists with all 7 required sections
 [ ] templates/<slug>/prompt.md exists with all 5 required sections
 [ ] templates/<slug>/customization-guide.md exists
-[ ] templates/<slug>/variants/15s.html exists and duration = 15s
-[ ] templates/<slug>/variants/30s.html exists and duration = 30s
+[ ] templates/<slug>/variants/15s.md exists and duration = 15s
+[ ] templates/<slug>/variants/30s.md exists and duration = 30s
 [ ] All colors in template.html use var(--color-*) — no hard-coded hex
 [ ] All fonts use var(--font-*) — no hard-coded font families
 [ ] window.__timelines registered, timeline is { paused: true }

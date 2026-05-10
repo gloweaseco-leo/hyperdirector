@@ -290,20 +290,18 @@ window.__timelines["my-composition"] = tl;
 
 ### AP-19: Dependency on external uncontrolled resources
 
-**Symptom:** Composition loads fonts, images, or scripts from CDN URLs without local fallback.
+**Symptom:** Composition loads fonts, images, or non-approved scripts from the network without an offline strategy; or uses a non-pinned GSAP URL.
 
 ```html
-<!-- Risky — CDN may be unavailable at render time -->
+<!-- Risky — wrong major/minor and unpinned -->
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.x/dist/gsap.min.js"></script>
 ```
 
 **Root cause:** Quick prototype approach; not suitable for reproducible rendering.
 
-**Why it fails:** CDN may be unreachable in the render environment (headless Chromium, Docker, CI). Render fails or produces different output.
+**Why it fails:** Remote resources may be unreachable in headless Chromium, Docker, CI, or WSL. Output may differ from preview.
 
-**Fix:** Bundle required libraries locally or use HyperFrames' built-in GSAP. Assets must be in `assets/` directory.
-
-**Note:** HyperFrames CLI bundles GSAP — use the version provided by the framework, not a CDN version.
+**Fix:** Use **relative** assets for images/video/audio/fonts needed at render time. For GSAP, follow **R-CORE-12**: approved cdnjs **3.12.x** **or** user-supplied `assets/gsap.min.js` (same minor). Do not load duplicate GSAP. For typography, prefer system stacks or local `@font-face` — see `rules/headless-rendering-stability.md`.
 
 **Severity:** Medium.
 

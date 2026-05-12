@@ -22,6 +22,8 @@ Hermes video director enhancement pack. HyperFrames is the render engine. HyperD
 - Command patterns → `upstream/hyperframes-command-patterns.md`
 - Agent-native rules → `upstream/hyperframes-agent-native-rules.md`
 - Headless / offline rendering stability → `rules/headless-rendering-stability.md`
+- Image asset rules → `rules/image-assets-basics.md`
+- Audio Director rules → `rules/audio-director-rules.md`
 
 ---
 
@@ -98,15 +100,20 @@ Step 8 — Render Report  (→ render-report.md)
 Every completed run produces these files in `output/<project-slug>/`:
 
 ```
-brief.json            required — structured requirements
-storyboard.json       required — scene structure
-DESIGN.md             required — visual design spec
-index.html            required — HyperFrames composition source
-render-report.md      required — QA + render status
-script.md             recommended — narration script
-brand-used.json       recommended — applied brand values snapshot
-edit-instructions.md  on iteration — change log
-final.mp4             when render executed
+brief.json              required — structured requirements
+storyboard.json         required — scene structure
+DESIGN.md               required — visual design spec
+index.html              required — HyperFrames composition source
+render-report.md        required — QA + render status
+script.md               recommended — narration script
+brand-used.json         recommended — applied brand values snapshot
+edit-instructions.md    on iteration — change log
+final.mp4               when render executed
+
+# Media Asset Pipeline (optional — activate when project needs visual or audio assets)
+asset-manifest.json     optional — image asset declarations (Source Image Pipeline)
+audio-manifest.json     optional — audio segment declarations (Audio Director)
+caption-timeline.json   optional — subtitle/caption alignment (Audio Director)
 ```
 
 ---
@@ -146,3 +153,31 @@ When user requests changes to an existing project:
 
 If environment check fails: generate source files only, note render as NOT EXECUTED in report.
 To run full check: `node scripts/check-env.js`
+
+---
+
+## Optional Media Asset Pipeline
+
+Media Asset Pipeline is **optional**. Activate when the project needs visual or audio assets beyond pure HTML/CSS composition.
+
+**Source Image Pipeline** — activate when the project needs:
+- Source images, screenshots, logos, product photos
+- PPT / PDF visuals, README diagrams, UI screenshots
+- Local visual assets bound to specific scenes or slots
+
+→ Produces `asset-manifest.json`. See `rules/image-assets-basics.md`, `docs/source-image-workflow.zh-CN.md`.
+
+**Audio Director** — activate when the project needs:
+- Voiceover planning and provider-neutral TTS contracts
+- Caption timeline aligned to audio segments
+- Audio/video sync QA and authorisation tracking
+- Audio manifest for render planning
+
+→ Produces `audio-manifest.json` + `caption-timeline.json`. See `rules/audio-director-rules.md`, `docs/audio-workflow.zh-CN.md`.
+
+Both pipelines are insertable **after Step 3 (Storyboard)** and **before Step 5 (HTML Composition)**. They are not required for every project.
+
+Advisory hazard scan (non-blocking, covers images and audio):
+```bash
+node hyperdirector/scripts/check-composition-hazards.js output/index.html
+```

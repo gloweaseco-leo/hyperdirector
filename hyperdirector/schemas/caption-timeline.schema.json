@@ -1,0 +1,182 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "hyperdirector/caption-timeline.schema.json",
+  "title": "HyperDirector Caption Timeline",
+  "description": "Caption/subtitle timeline for a HyperDirector composition. Captions can exist independently of audio (text-only subtitles) or be aligned to audio segments in audio-manifest.json via segment_id. See rules/audio-director-rules.md R-AUD-08.",
+  "type": "object",
+  "required": ["project_id", "captions"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "description": "Project identifier. Should match brief.title and audio-manifest.project_id."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Semantic version of this caption timeline.",
+      "examples": ["0.1.0"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date (YYYY-MM-DD) when this timeline was first created."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date (YYYY-MM-DD) when this timeline was last updated."
+    },
+    "total_duration_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total video duration in milliseconds. Sum of all scene durations. Used to validate that no caption extends beyond the video end."
+    },
+    "default_language": {
+      "type": "string",
+      "description": "Default BCP-47 language tag. Applies to captions that do not declare their own language.",
+      "examples": ["zh-CN", "en-US"]
+    },
+    "captions": {
+      "type": "array",
+      "minItems": 0,
+      "description": "Ordered list of caption entries. Order should match timeline position (ascending start_ms).",
+      "items": {
+        "type": "object",
+        "required": ["caption_id", "scene_id", "start_ms", "end_ms", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "caption_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]+$",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Unique caption identifier within this timeline. Use snake_case or kebab-case. Example: 'cap_scene01_01', 'cap-02-hook'."
+          },
+          "segment_id": {
+            "type": "string",
+            "maxLength": 64,
+            "description": "Optional reference to the corresponding segment_id in audio-manifest.json. Enables audio-caption sync validation (R-AUD-08). Leave empty for text-only captions with no associated audio."
+          },
+          "scene_id": {
+            "type": "string",
+            "pattern": "^scene[_-][a-z0-9_-]+$",
+            "description": "Storyboard scene ID this caption belongs to. Must match a scene.id in storyboard.json.",
+            "examples": ["scene_01", "scene-02"]
+          },
+          "shot_id": {
+            "type": "string",
+            "maxLength": 64,
+            "description": "Optional shot ID within the scene. Example: 'scene_01-shot-01'."
+          },
+          "start_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Caption display start time in milliseconds from video start."
+          },
+          "end_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Caption display end time in milliseconds from video start. Must be greater than start_ms."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Caption text to display. May include line breaks (\\n) for multi-line display. Should match the corresponding audio transcript (R-AUD-08)."
+          },
+          "language": {
+            "type": "string",
+            "description": "BCP-47 language tag for this caption entry. Inherits from timeline default_language if absent.",
+            "examples": ["zh-CN", "en-US", "ja-JP"]
+          },
+          "max_chars_per_line": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 120,
+            "description": "Maximum characters per line for display. Used to validate wrapping. Recommended: 20–30 for zh-CN (subtitle safe zone), 40–60 for en-US.",
+            "examples": [24, 40]
+          },
+          "line_count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4,
+            "description": "Number of display lines. Most subtitle safe zones support 2–3 lines maximum."
+          },
+          "emphasis": {
+            "type": "array",
+            "description": "Optional list of words or phrases to emphasise visually (bold, highlight, colour accent). These are display hints for the composer, not the audio.",
+            "items": {
+              "type": "string",
+              "maxLength": 80
+            }
+          },
+          "style": {
+            "type": "string",
+            "enum": ["default", "highlight", "whisper", "shout", "aside", "warning"],
+            "description": "Optional visual style hint for this caption. 'highlight': accent colour; 'whisper': smaller/dimmer; 'shout': larger/bold; 'aside': secondary text style; 'warning': warning colour. Composer maps these to CSS classes."
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 300,
+            "description": "Free-text notes. Record timing decisions, line-break rationale, or known display issues."
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "project_id": "saas-product-launch-q2",
+      "version": "0.1.0",
+      "created_at": "2026-05-12",
+      "updated_at": "2026-05-12",
+      "total_duration_ms": 60000,
+      "default_language": "zh-CN",
+      "captions": [
+        {
+          "caption_id": "cap_scene01_01",
+          "segment_id": "seg_scene01_hook",
+          "scene_id": "scene_01",
+          "start_ms": 500,
+          "end_ms": 4200,
+          "text": "你有没有想过\n一个人就能做出专业级的产品演示视频？",
+          "language": "zh-CN",
+          "max_chars_per_line": 20,
+          "line_count": 2,
+          "emphasis": ["专业级"],
+          "style": "default"
+        },
+        {
+          "caption_id": "cap_scene02_01",
+          "segment_id": "seg_scene02_feature",
+          "scene_id": "scene_02",
+          "start_ms": 4500,
+          "end_ms": 10000,
+          "text": "HyperDirector 让 Hermes\n直接从 brief 到渲染好的 MP4\n全程 AI 辅助",
+          "language": "zh-CN",
+          "max_chars_per_line": 18,
+          "line_count": 3,
+          "emphasis": ["brief", "MP4", "AI 辅助"],
+          "style": "highlight"
+        },
+        {
+          "caption_id": "cap_scene03_text_only",
+          "scene_id": "scene_03",
+          "start_ms": 10000,
+          "end_ms": 15000,
+          "text": "无需代码，无需专业设备",
+          "language": "zh-CN",
+          "max_chars_per_line": 20,
+          "line_count": 1,
+          "notes": "Text-only caption; no audio segment for this scene"
+        }
+      ]
+    }
+  ]
+}

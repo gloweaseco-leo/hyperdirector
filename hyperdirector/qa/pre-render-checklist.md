@@ -134,3 +134,51 @@ node hyperdirector/scripts/check-composition-hazards.js output/index.html
 ```bash
 npx hyperframes render --input output/index.html --output output/final.mp4
 ```
+
+---
+
+## 9. 媒体资产管线（可选，Source Image Pipeline + Audio Director）
+
+仅当项目启用了媒体资产管线时需要检查本节。如未使用，跳过。
+
+### 9a. 图片资产
+
+| 检查项 | 说明 | 命令/参考 |
+|--------|------|-----------|
+| ✅ asset-manifest.json 存在且符合 schema | 三个以上图片时建议建立 | `schemas/asset-manifest.schema.json` |
+| ✅ 所有图片 local_path 文件实际存在 | 相对于 output/ 目录 | — |
+| ✅ 所有图片 render_safe = true | 见 R-IMG-09 | `rules/image-assets-basics.md` |
+| ✅ `<img src>` 无远程 URL | 见 R-IMG-01 | hazards scan |
+| ✅ CSS background-image 无远程 URL | 见 R-IMG-03 | hazards scan |
+| ✅ 单张图片 ≤ 5 MB（或已注册压缩变体） | 见 R-IMG-06 | hazards scan |
+
+详细清单：`qa/image-asset-checklist.md`
+
+### 9b. 音频资产
+
+| 检查项 | 说明 | 命令/参考 |
+|--------|------|-----------|
+| ✅ audio-manifest.json 存在且符合 schema | 有旁白时必须建立 | `schemas/audio-manifest.schema.json` |
+| ✅ 所有 segment local_path 文件实际存在 | — | — |
+| ✅ 所有 segment render_safe = true | 见 R-AUD-02 | `rules/audio-director-rules.md` |
+| ✅ consent_status 无 unknown / consent_pending | 见 R-AUD-03 | — |
+| ✅ manifest 中不含 API key / Token | 见 R-AUD-04 | hazards scan |
+| ✅ `<audio src>` 无远程 URL | 见 R-AUD-01 | hazards scan |
+
+详细清单：`qa/audio-qa-checklist.md`
+
+### 9c. 字幕时间轴
+
+| 检查项 | 说明 |
+|--------|------|
+| ✅ caption-timeline.json 存在（若项目含旁白或字幕） | — |
+| ✅ 字幕文本与 transcript 含义一致 | 见 R-AUD-08 |
+| ✅ start_ms / end_ms 与对应 scene duration 匹配 | 误差 ≤ 500ms |
+| ✅ scene_id 与 storyboard 一致 | — |
+
+### 9d. 媒体资产快速辅助扫描
+
+```bash
+# 图片 + 音频启发式告警（非 lint，不阻断，exit 0）
+node hyperdirector/scripts/check-composition-hazards.js output/index.html
+```

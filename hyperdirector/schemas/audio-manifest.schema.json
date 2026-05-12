@@ -1,0 +1,237 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "hyperdirector/audio-manifest.schema.json",
+  "title": "HyperDirector Audio Manifest",
+  "description": "Declares all audio segments used in a HyperDirector composition. Tracks voice segments, provider metadata, scene bindings, caption references, consent status, and render readiness. See rules/audio-director-rules.md.",
+  "type": "object",
+  "required": ["project_id", "segments"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "manifest_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Semantic version of this manifest.",
+      "examples": ["0.1.0"]
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "description": "Project identifier or title. Should match brief.title."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date (YYYY-MM-DD) when this manifest was first generated."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date (YYYY-MM-DD) when this manifest was last updated."
+    },
+    "audio_root": {
+      "type": "string",
+      "maxLength": 260,
+      "description": "Relative path to the audio assets directory, from the project output root. Example: 'assets/audio'. All segment local_path values are resolved relative to the project output root, not this field.",
+      "examples": ["assets/audio"]
+    },
+    "caption_timeline_path": {
+      "type": "string",
+      "maxLength": 260,
+      "description": "Optional relative path to the companion caption-timeline.json file. Example: 'caption-timeline.json'.",
+      "examples": ["caption-timeline.json"]
+    },
+    "default_language": {
+      "type": "string",
+      "description": "Default BCP-47 language tag for segments that do not declare their own. Example: 'zh-CN', 'en-US'.",
+      "examples": ["zh-CN", "en-US"]
+    },
+    "segments": {
+      "type": "array",
+      "minItems": 0,
+      "description": "Ordered list of voice/audio segments. Order should match timeline position.",
+      "items": {
+        "type": "object",
+        "required": ["segment_id", "scene_id", "text", "render_safe", "consent_status"],
+        "additionalProperties": false,
+        "properties": {
+          "segment_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]+$",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Unique segment identifier within this manifest. Use snake_case or kebab-case. Example: 'seg_scene01_narration', 'seg-02-hook'."
+          },
+          "scene_id": {
+            "type": "string",
+            "pattern": "^scene[_-][a-z0-9_-]+$",
+            "description": "Storyboard scene ID this segment belongs to. Must match a scene.id in storyboard.json. Example: 'scene_01', 'scene-02'.",
+            "examples": ["scene_01", "scene-02"]
+          },
+          "shot_id": {
+            "type": "string",
+            "maxLength": 64,
+            "description": "Optional shot ID within the scene. Example: 'scene_01-shot-01'."
+          },
+          "speaker_id": {
+            "type": "string",
+            "maxLength": 64,
+            "description": "Optional speaker identifier, used when multiple speakers appear in a project. Free string. Example: 'narrator', 'host_a', 'product_voice'."
+          },
+          "voice_profile_id": {
+            "type": "string",
+            "maxLength": 64,
+            "description": "Optional reference to a voice_profile entry (Pro: see pro-templates/audio/voice-profile.schema.json). Enables provider-neutral voice swapping."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "description": "The script text for this segment. This is the source text passed to the TTS provider. Must be non-empty."
+          },
+          "language": {
+            "type": "string",
+            "description": "BCP-47 language tag for this segment. Inherits from manifest default_language if absent. Example: 'zh-CN', 'en-US'.",
+            "examples": ["zh-CN", "en-US", "ja-JP"]
+          },
+          "provider": {
+            "type": "string",
+            "maxLength": 80,
+            "description": "TTS provider used (or planned) for this segment. Free string for provider neutrality. Examples: 'edge-tts', 'cosyvoice', 'chattts', 'fish_audio', 'minimax', 'manual_recording'. Leave empty if not yet determined.",
+            "examples": ["edge-tts", "cosyvoice", "fish_audio", "minimax", "manual_recording"]
+          },
+          "voice_name": {
+            "type": "string",
+            "maxLength": 120,
+            "description": "Provider-specific voice name or ID. Example: 'zh-CN-XiaoxiaoNeural' for edge-tts. Leave empty if not yet determined."
+          },
+          "local_path": {
+            "type": "string",
+            "maxLength": 260,
+            "description": "Relative path to the local audio file, from the project output root. Required when render_safe = true. Example: 'assets/audio/scene01_narration.mp3'."
+          },
+          "format": {
+            "type": "string",
+            "enum": ["mp3", "wav", "m4a", "aac", "ogg", "opus", "flac", "other"],
+            "description": "Audio file format. Preferred: mp3, m4a/aac. See R-AUD-05."
+          },
+          "duration_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Audio segment duration in milliseconds. Used for sync validation against scene duration (R-AUD-07). Populate from actual audio file metadata when available."
+          },
+          "start_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Absolute start position in the video timeline, in milliseconds. 0 = video start."
+          },
+          "end_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Absolute end position in the video timeline, in milliseconds. Should equal start_ms + duration_ms."
+          },
+          "transcript": {
+            "type": "string",
+            "maxLength": 2000,
+            "description": "Actual spoken content as rendered by the TTS provider (post-synthesis). May differ from text due to provider normalisation. Used for caption alignment validation (R-AUD-08)."
+          },
+          "caption_ref": {
+            "type": "string",
+            "maxLength": 64,
+            "description": "Reference to the corresponding caption_id in caption-timeline.json. Enables cross-document sync validation."
+          },
+          "render_safe": {
+            "type": "boolean",
+            "description": "Whether this segment is cleared for production render. Must be true for all segments in final render (R-AUD-02). Conditions: local_path exists, format approved, consent_status confirmed, no API keys in manifest, transcript populated."
+          },
+          "consent_status": {
+            "type": "string",
+            "enum": [
+              "not_applicable",
+              "tts_only",
+              "consent_obtained",
+              "consent_pending",
+              "unknown"
+            ],
+            "description": "Voice consent and cloning status for this segment. See R-AUD-03 for full semantics. 'not_applicable': no TTS, no cloning. 'tts_only': standard TTS with provider-licensed voice, no personal resemblance. 'consent_obtained': voice cloning/personal voice with written consent on record. 'consent_pending': consent not yet confirmed — blocks render_safe. 'unknown': source unclear — blocks render_safe."
+          },
+          "consent_notes": {
+            "type": "string",
+            "maxLength": 400,
+            "description": "Required when consent_status = 'consent_obtained'. Record the consent reference: who authorized, when, and how (e.g. 'Written consent from [name] on 2026-05-12 via email, reference: consent-2026-Q2-001')."
+          },
+          "provider_metadata": {
+            "type": "object",
+            "description": "Optional provider-specific metadata. Must not contain API keys, tokens, passwords, or credentials. Use for non-sensitive parameters only (e.g. voice style, speed, pitch settings submitted to provider).",
+            "additionalProperties": true
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 400,
+            "description": "Free-text notes about this segment. Record production decisions, known issues, or timing adjustments."
+          }
+        },
+        "if": {
+          "properties": { "consent_status": { "const": "consent_obtained" } },
+          "required": ["consent_status"]
+        },
+        "then": {
+          "required": ["consent_notes"]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "project_id": "saas-product-launch-q2",
+      "manifest_version": "0.1.0",
+      "generated_at": "2026-05-12",
+      "updated_at": "2026-05-12",
+      "audio_root": "assets/audio",
+      "caption_timeline_path": "caption-timeline.json",
+      "default_language": "zh-CN",
+      "segments": [
+        {
+          "segment_id": "seg_scene01_hook",
+          "scene_id": "scene_01",
+          "speaker_id": "narrator",
+          "text": "你有没有想过，一个人就能做出专业级的产品演示视频？",
+          "language": "zh-CN",
+          "provider": "edge-tts",
+          "voice_name": "zh-CN-XiaoxiaoNeural",
+          "local_path": "assets/audio/seg_scene01_hook.mp3",
+          "format": "mp3",
+          "duration_ms": 4200,
+          "start_ms": 0,
+          "end_ms": 4200,
+          "transcript": "你有没有想过，一个人就能做出专业级的产品演示视频？",
+          "caption_ref": "cap_scene01_01",
+          "render_safe": true,
+          "consent_status": "tts_only"
+        },
+        {
+          "segment_id": "seg_scene02_feature",
+          "scene_id": "scene_02",
+          "speaker_id": "narrator",
+          "text": "HyperDirector 让 Hermes 直接从 brief 到渲染好的 MP4，全程 AI 辅助。",
+          "language": "zh-CN",
+          "provider": "edge-tts",
+          "voice_name": "zh-CN-XiaoxiaoNeural",
+          "local_path": "assets/audio/seg_scene02_feature.mp3",
+          "format": "mp3",
+          "duration_ms": 5800,
+          "start_ms": 4200,
+          "end_ms": 10000,
+          "transcript": "HyperDirector 让 Hermes 直接从 brief 到渲染好的 MP4，全程 AI 辅助。",
+          "caption_ref": "cap_scene02_01",
+          "render_safe": false,
+          "consent_status": "tts_only",
+          "notes": "PENDING: audio file not yet generated"
+        }
+      ]
+    }
+  ]
+}

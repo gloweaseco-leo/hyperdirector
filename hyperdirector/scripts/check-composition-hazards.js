@@ -111,6 +111,143 @@ if (cssUsesTranslate && gsapUsesScale) {
   warn('CSS translate/transform + GSAP scale detected — risk of overwritten layout transforms on subtitles/titles (see R-GSAP-09). Review tweens.');
 }
 
+// ---------------------------------------------------------------------------
+// Image asset advisory checks (R-IMG-01 ~ R-IMG-06)
+// ---------------------------------------------------------------------------
+
+const htmlDir = path.dirname(abs);
+
+// --- Remote <img src> URLs ---
+const imgTagRe = /<img\b([^>]*)>/gi;
+let imgMatch;
+while ((imgMatch = imgTagRe.exec(html)) !== null) {
+  const attrs = imgMatch[1];
+
+  // R-IMG-01: remote src
+  const srcMatch = /\bsrc\s*=\s*["']([^"']+)["']/i.exec(attrs);
+  if (srcMatch) {
+    const srcVal = srcMatch[1].trim();
+    if (/^https?:\/\//i.test(srcVal)) {
+      warn(`<img src> uses remote URL: ${srcVal} — replace with local asset before production render (R-IMG-01).`);
+    } else if (!/^data:/i.test(srcVal)) {
+      // R-IMG-05/R-IMG-06: local path checks
+      const localAbs = path.resolve(htmlDir, srcVal);
+      if (!fs.existsSync(localAbs)) {
+        warn(`<img src> local path not found: ${srcVal} (resolved: ${localAbs}) — file missing (R-IMG-09).`);
+      } else {
+        try {
+          const stat = fs.statSync(localAbs);
+          if (stat.size > 5 * 1024 * 1024) {
+            warn(`<img src> file is large (${(stat.size / 1024 / 1024).toFixed(1)} MB): ${srcVal} — compress or register a WebP variant in asset-manifest.json (R-IMG-06).`);
+          }
+        } catch (_) {
+          // ignore stat errors silently
+        }
+      }
+    }
+  }
+
+  // R-IMG-02: missing alt
+  if (!/\balt\s*=/i.test(attrs)) {
+    const srcHint = srcMatch ? srcMatch[1].slice(0, 60) : '(unknown src)';
+    note(`<img> missing alt attribute: src="${srcHint}" — add alt="" for decorative images or a descriptive string for content images (R-IMG-02).`);
+  }
+}
+
+// --- Remote background-image in CSS (inline style + <style> blocks) ---
+// Collect inline style= attributes
+const inlineStyleRe = /\bstyle\s*=\s*["']([^"']*)["']/gi;
+let styleAttrMatch;
+const inlineStyles = [];
+while ((styleAttrMatch = inlineStyleRe.exec(html)) !== null) {
+  inlineStyles.push(styleAttrMatch[1]);
+}
+const allCssSources = [...styleTagContent, ...inlineStyles].join('\n');
+
+const bgImageRe = /background(?:-image)?\s*:\s*url\(\s*["']?(https?:\/\/[^"')]+)["']?\s*\)/gi;
+let bgMatch;
+while ((bgMatch = bgImageRe.exec(allCssSources)) !== null) {
+  warn(`CSS background-image uses remote URL: ${bgMatch[1]} — replace with local asset before production render (R-IMG-03).`);
+}
+
+// --- SVG external reference risk ---
+// <image href="https://..."> or xlink:href
+const svgImageRe = /<image\b[^>]*(?:xlink:)?href\s*=\s*["'](https?:\/\/[^"']+)["'][^>]*>/gi;
+if (svgImageRe.test(html)) {
+  warn('SVG <image> element references a remote URL — external SVG image refs fail silently in headless Chromium (R-IMG-04).');
+}
+// <use href="https://...">
+const svgUseRe = /<use\b[^>]*(?:xlink:)?href\s*=\s*["'](https?:\/\/[^"']+)["'][^>]*>/gi;
+if (svgUseRe.test(html)) {
+  warn('SVG <use> element references a remote URL — resolve to inline SVG or local asset before render (R-IMG-04).');
+}
+
+// ---------------------------------------------------------------------------
+// Audio asset advisory checks (R-AUD-01, R-AUD-04)
+// ---------------------------------------------------------------------------
+
+// --- <audio> tags: remote src, missing src, local path / size ---
+const audioTagRe = /<audio\b([^>]*)>/gi;
+let audioMatch;
+while ((audioMatch = audioTagRe.exec(html)) !== null) {
+  const attrs = audioMatch[1];
+
+  const audioSrcMatch = /\bsrc\s*=\s*["']([^"']+)["']/i.exec(attrs);
+  if (!audioSrcMatch) {
+    // Missing src on <audio> tag (skip if it's a container with <source> children — heuristic)
+    if (!/\bcontrols\b/i.test(attrs) || !/type\s*=/i.test(html.slice(audioMatch.index, audioMatch.index + 300))) {
+      note('<audio> element has no src attribute — verify a <source> child provides the audio URL (R-AUD-01).');
+    }
+  } else {
+    const audioSrcVal = audioSrcMatch[1].trim();
+    if (/^https?:\/\//i.test(audioSrcVal)) {
+      warn(`<audio src> uses remote URL: ${audioSrcVal} — replace with local asset before production render (R-AUD-01).`);
+    } else if (!/^data:/i.test(audioSrcVal)) {
+      const audioLocalAbs = path.resolve(htmlDir, audioSrcVal);
+      if (!fs.existsSync(audioLocalAbs)) {
+        warn(`<audio src> local path not found: ${audioSrcVal} (resolved: ${audioLocalAbs}) — file missing (R-AUD-02).`);
+      } else {
+        try {
+          const audioStat = fs.statSync(audioLocalAbs);
+          if (audioStat.size > 10 * 1024 * 1024) {
+            warn(`<audio src> file is large (${(audioStat.size / 1024 / 1024).toFixed(1)} MB): ${audioSrcVal} — consider compressed format (MP3/M4A) or register in audio-manifest.json (R-AUD-05).`);
+          }
+        } catch (_) {
+          // ignore stat errors silently
+        }
+      }
+    }
+  }
+}
+
+// --- <source> inside <audio>: remote src ---
+const audioSourceRe = /<source\b([^>]*)>/gi;
+let audioSourceMatch;
+while ((audioSourceMatch = audioSourceRe.exec(html)) !== null) {
+  const srcM = /\bsrc\s*=\s*["']([^"']+)["']/i.exec(audioSourceMatch[1]);
+  if (srcM && /^https?:\/\//i.test(srcM[1].trim())) {
+    warn(`<source src> uses remote URL: ${srcM[1].trim()} — replace with local audio asset before production render (R-AUD-01).`);
+  }
+}
+
+// --- Heuristic API key detection in inline JSON / data attributes ---
+// Looks for common key patterns (sk-, Bearer, long base64 strings) in HTML text
+// This is a weak heuristic — only catches obvious leaks
+const apiKeyPatterns = [
+  /\bsk-[A-Za-z0-9]{20,}/,
+  /Bearer\s+[A-Za-z0-9\-._~+/]{20,}/,
+  /api[_-]?key\s*[:=]\s*["']?[A-Za-z0-9\-._]{20,}["']?/i,
+  /token\s*[:=]\s*["']?[A-Za-z0-9\-._]{32,}["']?/i,
+];
+for (const pattern of apiKeyPatterns) {
+  if (pattern.test(html)) {
+    warn(`Possible API key or token pattern detected in HTML — ensure no credentials are embedded in composition source (R-AUD-04). Review before committing.`);
+    break; // one warning is enough
+  }
+}
+
+// ---------------------------------------------------------------------------
+
 console.log(`${DIM}Scan complete: ${abs}${RESET}`);
 console.log(`${DIM}This tool is advisory only. Use \`npx hyperframes lint\` for authoritative checks.${RESET}`);
 

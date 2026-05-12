@@ -1,0 +1,334 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "hyperdirector/asset-manifest.schema.json",
+  "title": "HyperDirector Asset Manifest",
+  "description": "Declares image assets used in a HyperDirector composition. Tracks source, role, binding to scenes/shots/slots, render readiness, and optional variants. Validated before production render. See rules/image-assets-basics.md.",
+  "type": "object",
+  "required": ["project", "assets"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "description": "Project title or slug. Should match brief.title."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Semantic version of this manifest. Optional; useful for incremental asset pipeline iterations.",
+      "examples": ["0.1.0"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Date this manifest was first created. ISO 8601 date (YYYY-MM-DD)."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Date this manifest was last updated. ISO 8601 date (YYYY-MM-DD)."
+    },
+    "assets": {
+      "type": "array",
+      "minItems": 0,
+      "description": "Ordered list of image assets used in this project.",
+      "items": {
+        "type": "object",
+        "required": ["asset_id", "type", "role", "render_safe"],
+        "additionalProperties": false,
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]+$",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Unique asset identifier within this manifest. Use snake_case or kebab-case. Examples: hero_image_01, brand_logo, scene02_bg."
+          },
+          "type": {
+            "type": "string",
+            "const": "image",
+            "description": "Asset type. Always 'image' in this schema version."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "background",
+              "logo",
+              "overlay",
+              "hero_image",
+              "ui_screenshot",
+              "document_page",
+              "chart",
+              "diagram",
+              "character_photo",
+              "product_photo",
+              "scene_thumbnail",
+              "icon",
+              "texture",
+              "reference_only",
+              "unknown",
+              "custom"
+            ],
+            "description": "Visual role of this asset in the composition. Use 'custom' with custom_role for project-specific roles not covered by this list."
+          },
+          "custom_role": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "description": "Required when role = 'custom'. Free-text description of the custom role. Examples: 'before_after_comparison_left', 'map_overlay', 'event_banner'."
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Human-readable description of where this asset came from. Examples: 'Client-supplied via email 2026-05-10', 'Exported from Figma component Library v3', 'Screenshot of product UI at 1920x1080', 'PDF page 4 extracted via poppler'."
+          },
+          "local_path": {
+            "type": "string",
+            "maxLength": 260,
+            "description": "Relative path to the local file, from the project output root (same directory as index.html). Required if render_safe = true. Use forward slashes. Example: 'assets/hero.png'."
+          },
+          "format": {
+            "type": "string",
+            "enum": ["png", "jpg", "jpeg", "webp", "svg", "gif", "bmp", "tiff", "other"],
+            "description": "Image file format. Preferred formats for render: png, jpg, webp, svg. Avoid bmp, tiff for headless render."
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Image width in pixels. Required for raster images; omit or set to 0 for SVG."
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Image height in pixels. Required for raster images; omit or set to 0 for SVG."
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "pattern": "^[0-9.]+:[0-9.]+$",
+            "description": "Aspect ratio as a string. Examples: '16:9', '1:1', '4:3', '9:16'. Computed from width/height if not supplied.",
+            "examples": ["16:9", "1:1", "4:3"]
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "File size in bytes. Used for advisory checks (R-IMG-06: warn > 5 MB). Populate with actual file stat when available."
+          },
+          "has_alpha": {
+            "type": "boolean",
+            "description": "Whether the image has an alpha (transparency) channel. Set to true for PNG/WebP with transparency."
+          },
+          "variants": {
+            "type": "array",
+            "description": "Optional list of alternative resolutions, formats, or crops of the same asset. Use to register compressed/downscaled versions for render while preserving the original as archive.",
+            "items": {
+              "type": "object",
+              "required": ["variant_id", "local_path"],
+              "additionalProperties": false,
+              "properties": {
+                "variant_id": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9_-]+$",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "description": "Unique variant identifier within this asset. Examples: 'thumb_480', 'compressed_webp', 'cropped_square'."
+                },
+                "local_path": {
+                  "type": "string",
+                  "maxLength": 260,
+                  "description": "Relative path to this variant file."
+                },
+                "format": {
+                  "type": "string",
+                  "enum": ["png", "jpg", "jpeg", "webp", "svg", "gif", "other"]
+                },
+                "width": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "height": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "size_bytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "use_for_render": {
+                  "type": "boolean",
+                  "description": "If true, this variant should be used in the production render instead of the parent asset's local_path. Only one variant per asset should have this set to true."
+                },
+                "notes": {
+                  "type": "string",
+                  "maxLength": 200
+                }
+              }
+            }
+          },
+          "bindings": {
+            "type": "array",
+            "description": "List of scene/shot/slot bindings. One asset may be bound to multiple positions in the composition. References storyboard scene IDs and shot IDs.",
+            "items": {
+              "type": "object",
+              "required": ["scene_id"],
+              "additionalProperties": false,
+              "properties": {
+                "scene_id": {
+                  "type": "string",
+                  "pattern": "^scene[_-][a-z0-9_-]+$",
+                  "description": "Storyboard scene ID. Must match a scene.id in the corresponding storyboard.json. Examples: 'scene_01', 'scene-02'.",
+                  "examples": ["scene_01", "scene-02"]
+                },
+                "shot_id": {
+                  "type": "string",
+                  "maxLength": 64,
+                  "description": "Optional shot ID within the scene. Format: '<scene_id>-shot-<NN>'. Examples: 'scene_01-shot-01'."
+                },
+                "slot": {
+                  "type": "string",
+                  "maxLength": 64,
+                  "description": "Named slot or layer in the composition HTML where this asset is placed. Examples: 'main_visual', 'background', 'logo_top_right', 'product_overlay'."
+                },
+                "usage": {
+                  "type": "string",
+                  "maxLength": 80,
+                  "description": "How this asset is used at this binding location. Examples: 'full_bleed_background', 'logo_watermark', 'ui_screenshot', 'product_hero'."
+                },
+                "priority": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "Binding priority when multiple assets compete for the same slot. Lower number = higher priority. Defaults to 1."
+                }
+              }
+            }
+          },
+          "license_status": {
+            "type": "string",
+            "enum": [
+              "client_supplied",
+              "royalty_free",
+              "creative_commons",
+              "licensed_commercial",
+              "internal_only",
+              "ai_generated",
+              "public_domain",
+              "pending",
+              "unknown"
+            ],
+            "description": "License or ownership status of this asset. 'pending' or 'unknown' blocks render_safe = true. 'ai_generated' must have explicit user confirmation before production use."
+          },
+          "license_notes": {
+            "type": "string",
+            "maxLength": 300,
+            "description": "Additional license details. Examples: 'Client provided written authorization on 2026-05-10', 'Unsplash free license, attribution not required', 'Requires attribution in video description'."
+          },
+          "render_safe": {
+            "type": "boolean",
+            "description": "Whether this asset is cleared for production render. Must be true for all assets used in final render (R-IMG-09). Set to false during planning phase. Flip to true only when: local_path exists, format is approved, no external dependencies, license_status confirmed."
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 400,
+            "description": "Free-text notes about this asset. Record source context, crop decisions, or known issues."
+          }
+        },
+        "if": {
+          "properties": { "role": { "const": "custom" } },
+          "required": ["role"]
+        },
+        "then": {
+          "required": ["custom_role"]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "project": "saas-product-launch-q2",
+      "version": "0.2.0",
+      "created_at": "2026-05-10",
+      "updated_at": "2026-05-12",
+      "assets": [
+        {
+          "asset_id": "hero_screenshot_01",
+          "type": "image",
+          "role": "ui_screenshot",
+          "source": "Screenshot of dashboard at 1920x1080, captured 2026-05-09",
+          "local_path": "assets/hero_screenshot_01.png",
+          "format": "png",
+          "width": 1920,
+          "height": 1080,
+          "aspect_ratio": "16:9",
+          "size_bytes": 1245000,
+          "has_alpha": false,
+          "license_status": "client_supplied",
+          "render_safe": true,
+          "bindings": [
+            {
+              "scene_id": "scene_02",
+              "shot_id": "scene_02-shot-01",
+              "slot": "main_visual",
+              "usage": "ui_screenshot",
+              "priority": 1
+            }
+          ]
+        },
+        {
+          "asset_id": "brand_logo",
+          "type": "image",
+          "role": "logo",
+          "source": "Exported from brand kit Figma file",
+          "local_path": "assets/brand_logo.svg",
+          "format": "svg",
+          "has_alpha": true,
+          "license_status": "client_supplied",
+          "render_safe": true,
+          "bindings": [
+            { "scene_id": "scene_01", "slot": "logo_top_right", "priority": 1 },
+            { "scene_id": "scene_05", "slot": "logo_top_right", "priority": 1 }
+          ]
+        },
+        {
+          "asset_id": "hero_screenshot_01_webp",
+          "type": "image",
+          "role": "ui_screenshot",
+          "source": "WebP compressed variant of hero_screenshot_01",
+          "local_path": "assets/hero_screenshot_01.png",
+          "format": "png",
+          "width": 1920,
+          "height": 1080,
+          "size_bytes": 1245000,
+          "has_alpha": false,
+          "license_status": "client_supplied",
+          "render_safe": false,
+          "notes": "PENDING: awaiting client approval for compressed variant",
+          "variants": [
+            {
+              "variant_id": "webp_1920",
+              "local_path": "assets/hero_screenshot_01_1920.webp",
+              "format": "webp",
+              "width": 1920,
+              "height": 1080,
+              "size_bytes": 380000,
+              "use_for_render": true,
+              "notes": "Compressed from PNG, quality 85"
+            },
+            {
+              "variant_id": "webp_960",
+              "local_path": "assets/hero_screenshot_01_960.webp",
+              "format": "webp",
+              "width": 960,
+              "height": 540,
+              "size_bytes": 120000,
+              "notes": "Half-resolution for thumbnail or mobile preview"
+            }
+          ],
+          "bindings": []
+        }
+      ]
+    }
+  ]
+}

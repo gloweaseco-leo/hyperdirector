@@ -3,6 +3,10 @@
 > Hermes video director enhancement pack — powered by HyperFrames.  
 > 中文文档 → [README.zh-CN.md](./README.zh-CN.md) · Skill Pack 详解 → [hyperdirector/README.zh-CN.md](./hyperdirector/README.zh-CN.md)
 
+HyperDirector is an Agent Skill Pack experiment that wraps creative video production into a structured, inspectable workflow: planning, artifact generation, validation, and delivery.
+
+It is designed to make AI-generated video production more controllable, editable, and repeatable — from prompt to brief, storyboard, HTML project, QA checks, and final render.
+
 **License:** [Apache License 2.0](./LICENSE) · **Contributing:** [CONTRIBUTING.md](./CONTRIBUTING.md) · **Security:** [SECURITY.md](./SECURITY.md) · **Releases:** [v0.1.0](./RELEASE_NOTES_v0.1.md) · [v0.1.1](./RELEASE_NOTES_v0.1.1.md)
 
 ---

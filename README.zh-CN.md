@@ -3,6 +3,10 @@
 > 面向 Hermes 的结构化视频导演 Skill Pack，底层渲染由 [HyperFrames](https://github.com/heygen-com/hyperframes) 完成。  
 > English → [README.md](./README.md)
 
+HyperDirector 是一个 Agent Skill Pack 实验：把视频创作从一句提示词，拆成可规划、可检查、可修改、可交付的结构化任务流。
+
+它关注的不是一次性生成视频，而是让视频生产具备流程、模板、质量检查和可重复交付能力。
+
 ---
 
 ## 这是什么？

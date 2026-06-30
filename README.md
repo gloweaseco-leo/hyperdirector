@@ -55,6 +55,23 @@ User prompt
 
 It wraps [HyperFrames](https://github.com/heygen-com/hyperframes) (HTML-to-video engine by HeyGen) with a director layer: capability judgment, brand memory, template selection, QA fix loop, and delivery packaging.
 
+## Optional Hermes Tweet Companion
+
+For video briefs that depend on X/Twitter research, launch monitoring, audience
+language, or approved publishing steps, this repository also includes an
+optional Hermes Tweet companion skill:
+
+```bash
+hermes plugins install Xquik-dev/hermes-tweet --enable
+mkdir -p ~/.hermes/skills/hermes-tweet
+rsync -a companions/hermes-tweet/ ~/.hermes/skills/hermes-tweet/
+hermes tools list
+```
+
+Use the companion to collect catalog-listed X/Twitter signals through Xquik,
+then pass the approved findings into HyperDirector's brief and storyboard flow.
+Writes stay gated by `HERMES_TWEET_ENABLE_ACTIONS=true`.
+
 ---
 
 ## Repository Layout
